@@ -1,0 +1,419 @@
+--- 
+tile_engines: 
+- mailer_config: &id001 
+    from: cable@alaska.edu
+    to: jay@alaska.edu
+    setup: 
+      :domain: gina.alaska.edu
+      :address: dino.gi.alaska.edu
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: drg_geo
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl_extras.cgi?layers=drg&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:4326&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: &id002 
+      - 137.229.19.235
+    stat_sync_time: 3600
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_drg_geo.yml
+    image_bg: bg.jpg
+    extents: &id003 
+      ymax: 12000000
+      xmax: 14000000
+      ymin: 6700000
+      xmin: 20000000
+    z_level_map: 9
+  temp_area: /tile_temp/
+  debug: false
+  storage_format: png
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/drg_geo/
+  base_extents: 
+    ymax: 90.0
+    xmax: 180.0
+    ymin: -90.0
+    xmin: -180.0
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: bdl_geo
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl.cgi?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/jpeg&request=GetMap&height=%d&srs=EPSG:4326&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3610
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_bdl_geo.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tile_temp/
+  debug: false
+  storage_format: jpg
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/bdl_geo/
+  base_extents: 
+    ymax: 90.0
+    xmax: 180.0
+    ymin: -90.0
+    xmin: -180.0
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: bdl
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl_google.cgi?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/jpeg&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 5
+    y_count: 5
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3620
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_bdl.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tmp//tile_temp/
+  debug: false
+  storage_format: jpg
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/bdl/
+  base_extents: 
+    ymax: 20037508.3427892
+    xmax: 20037508.3427892
+    ymin: -20037508.3427892
+    xmin: -20037508.3427892
+  label: 
+    size: 10
+    text: "SDMI - GINA" 
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: drg
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl_extras_google.cgi?layers=drg&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 8
+    y_count: 8
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3630
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_drg.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tmp//tile_temp/
+  debug: true
+  storage_format: png
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/drg/
+  base_extents: 
+    ymax: 20037508.3427892
+    xmax: 20037508.3427892
+    ymin: -20037508.3427892
+    xmin: -20037508.3427892
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: drg_geo
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl.cgi?layers=drg&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:4326&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3640
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_drg_geo.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tile_temp/
+  debug: false
+  storage_format: png
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/drg_geo/
+  base_extents: 
+    ymax: 90.0
+    xmax: 180.0
+    ymin: -90.0
+    xmin: -180.0
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: charts
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl_extras_google.cgi?layers=charts&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3650
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_charts.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tmp//tile_temp/
+  debug: false
+  storage_format: png
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/charts/
+  base_extents: 
+    ymax: 20037508.3427892
+    xmax: 20037508.3427892
+    ymin: -20037508.3427892
+    xmin: -20037508.3427892
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: charts_geo
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl.cgi?layers=charts&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:4326&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3660
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_charts_geo.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tile_temp/
+  debug: false
+  storage_format: png
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/charts_geo/
+  base_extents: 
+    ymax: 90.0
+    xmax: 180.0
+    ymin: -90.0
+    xmin: -180.0
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: shaded_relief_ned
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl_extras_google.cgi?layers=shaded_relief_ned&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3655
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_ned.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tmp//tile_temp/
+  debug: false
+  storage_format: png
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/shaded_relief_ned/
+  base_extents: 
+    ymax: 20037508.3427892
+    xmax: 20037508.3427892
+    ymin: -20037508.3427892
+    xmin: -20037508.3427892
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: shaded_relief_ned_geo
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl.cgi?layers=shaded_relief_ned&styles=&service=WMS&width=%d&format=image/jpeg&request=GetMap&height=%d&srs=EPSG:4326&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    size:  512
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3670
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_ned_geo.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tile_temp/
+  debug: false
+  storage_format: png
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/shaded_relief_ned_geo/
+  base_extents: 
+    ymax: 90.0
+    xmax: 180.0
+    ymin: -90.0
+    xmin: -180.0
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: landsat_pan
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl_extras_google.cgi?layers=landsat_pan&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3680
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_stats_landsat.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tmp//tile_temp/
+  debug: false
+  storage_format: jpg
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/landsat_pan/
+  base_extents: 
+    ymax: 20037508.3427892
+    xmax: 20037508.3427892
+    ymin: -20037508.3427892
+    xmin: -20037508.3427892
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+- mailer_config: *id001
+  error: 
+    format: png
+    img: /home/jcable/cm/jcable/tile_concentrator/error.png
+  title: landsat_pan_geo
+  source_url: http://wms.alaskamapped.org//cgi-bin/bdl.cgi?layers=landsat_pan&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:4326&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles: 
+    y_size: 256
+    x_size: 256
+    x_count: 6
+    y_count: 6
+  heatmap: 
+    stat_image_file: /home/jcable/cm/jcable/tile_concentrator/heat_map.png
+    exclude_ip: *id002
+    stat_sync_time: 3690
+    stat_save_file: /home/jcable/cm/jcable/tile_concentrator/heat_map/heat_map_stats_landsat_pan_geo.yml
+    image_bg: bg.jpg
+    extents: *id003
+    z_level_map: 9
+  temp_area: /tile_temp/
+  debug: false
+  storage_format: jpg
+  cache_dir: /home/jcable/cm/jcable/tile_concentrator/cache/landsat_pan_geo/
+  base_extents: 
+    ymax: 90.0
+    xmax: 180.0
+    ymin: -90.0
+    xmin: -180.0
+  label: 
+    size: 10
+    text: "SDMI - GINA"
+    color: 
+    - 0
+    - 128
+    - 0
+    - 60
+log: 
+  logdir: /home/jcable/cm/jcable/tile_concentrator/log
+  info: true
+  verbose: true
+  debug: false
+  quiet: false
+http: 
+  port: 3333
+  bind: 0.0.0.0
+  base: /foo

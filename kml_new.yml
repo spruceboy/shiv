@@ -1,0 +1,20 @@
+bdl:
+  source_low: "http://wms.gina.alaska.edu//cgi-bin/bdl.cgi?VERSION=1.1.1&REQUEST=GetMap&SRS=EPSG:4326&BBOX=%.20f,%.20f,%.20f,%.20f&WIDTH=512&HEIGHT=256&LAYERS=bdl_low_res,bdl_mid_res,bdl_high_res&STYLES=&EXCEPTIONS=application/vnd.ogc.se_xml&FORMAT=image/jpeg&BGCOLOR=0xFFFFFF&TRANSPARENT=TRUE"
+  source: "http://swmha.gina.alaska.edu//cgi-bin/tilecache.cgi?VERSION=1.1.1&REQUEST=GetMap&SRS=EPSG:4326&BBOX=%.20f,%.20f,%.20f,%.20f&WIDTH=512&HEIGHT=256&LAYERS=google_earth&STYLES=&EXCEPTIONS=application/vnd.ogc.se_xml&FORMAT=image/jpeg&BGCOLOR=0xFFFFFF&TRANSPARENT=TRUE"
+  tl:
+    x: -180
+    y: 90
+  br:
+    x: 180
+    y: -90
+  url: "http://wms.alaskamapped.org/cgi-bin/kml_new.cgi?set=%s&tl_x=%.20f&tl_y=%.20f&br_x=%.20f&br_y=%.20f&"
+drg:
+  source_low: "http://hippy.gina.alaska.edu:3000/ge/%.20f/%.20f/%.20f/%.20f"
+  source: "http://hippy.gina.alaska.edu:3000/ge/%.20f/%.20f/%.20f/%.20f"
+  tl:
+    x: -180
+    y: 90
+  br:
+    x: 180
+    y: -90
+  url: "http://hippy.gina.alaska.edu/cgi-bin/kml_new.cgi?set=%s&tl_x=%.20f&tl_y=%.20f&br_x=%.20f&br_y=%.20f&"
