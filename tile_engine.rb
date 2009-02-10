@@ -1,10 +1,10 @@
 #!/usr/bin/ruby
 
 require "rubygems"
-require "imlib2"
 require "tempfile"
 require "thread"
 require "http_client_tools"
+
 
 
 
@@ -42,7 +42,8 @@ class TileEngine
   # Returns the path to a tile
   def get_tile (x,y,z)
     path = get_path(x,y,z)
-    tile_gen(x,y,z) if (!(File.exists?(path) && File.size?(path) > 0))
+    tile_gen(x,y,z) if (!File.exists?(path))
+    tile_gen(x,y,z) if (File.exists?(path) && File.size?(path) == 0)
     return path
   end
   
@@ -76,26 +77,28 @@ class TileEngine
   # Fixer/waiter - checks to see if a tile has been generated, if not waits until it shows up..
   def check_and_wait(x,y,z)
       path= get_path(x,y,z)
-      while ( !File.exists?(path) && !(File.size(path) > 0 ) )
+      while ( !File.exists?(path) || File.size?(path) == nil )
         @log.msgdebug("TileEngine:"+"check_and_wait -> waiting on #{x},#{y},#{z}")
         sleep(0.01)
       end
   end
   
   
-  private
   
   ##
   # Returns path to an (x,y,z) set.. 
   def get_path (x,y,z)
-    return @cfg["cache_dir"] + sprintf(PATH_FORMAT, z,x%128,x%128,x,y,x,y,z,@storage_format)
+    return @cfg["cache_dir"] + sprintf(PATH_FORMAT, z,x%128,y%128,x,y,x,y,z,@storage_format)
   end
+  
+  private
   
   ##
   # creates the path for a tile..
   def mk_path(x,y,z)
     splits = File.dirname(get_path(x,y,z)).split("/")
-    start = "/"
+    start = splits.first
+    splits.delete_at(0)
     splits.each do |x|
       start += "/" + x
       if ( !File.exists?(start))
@@ -135,6 +138,9 @@ end
 # Probibly needs to be abstracted out, as the imlib2 based section is really small...
 
 class Imlib2TileEngine  < TileEngine
+  
+  require "imlib2"
+  
   ##
   # Create a mutex for locking on a per-engine basis...
   #Classed based, as ruby's imlib2 appears to have thread issues...
@@ -364,13 +370,17 @@ end
 
 
 ####
-# Class similar to above, but uses a command line fetcher to do tile work.... Used for seeding...
+# Newer tilesetup 
 
 class ExternalTileEngine  < TileEngine
   
   def initialize (cfg, logger)
     super(cfg,logger)
     @lt = "ExternalTileEngine"
+    
+    @command_path = File.dirname(__FILE__) + "/tile_grabber.rb"
+    
+    @config = ARGV.first ##This sucks sooo bad... Major punt here... Jay sucks..
   end
   private
   
@@ -379,11 +389,18 @@ class ExternalTileEngine  < TileEngine
     path = get_path(x,y,z)
     # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
     return path if ( File.exists?(path))
-    command = ["./tile_grabber.rb", "shiv.heatmap.yml", @cfg["title"], x.to_s, y.to_s, z.to_s]
+    command = [@command_path, @config, @cfg["title"], x.to_s, y.to_s, z.to_s]
     @log.msgdebug(@lt+"running -> #{command.join(" ")}")
-    system(*command)
+    
+    @log.msginfo(@lt+"Starting subtiler (#{x},#{y}.#{z})..")
+    results = YAML.load(`#{command.join(" ")}`)
+    @log.msginfo(@lt+"Subtiler finished (#{x},#{y}.#{z}).")
+    if (results["error"])
+      raise "external tiler error, reason -> #{results["reason"]}"
+    end
     return get_path(x,y,z)
   end
+
 end
 
 ##
@@ -439,7 +456,7 @@ end
 
 
 class TileLockerFile
-  WAIT_TIME= (60*2)
+  WAIT_TIME= (60*3)
   def initialize (log)
     @log = log
     @lock_dir = "./locks/"
@@ -494,7 +511,7 @@ class TileLockerFile
   def locked(x,y,z)
     @m_lock.synchronize do
       path = getpath(x,y,z)
-      if ( File.exists?(path) && Time.now - File.mtime(path) > WAIT_TIME )
+      if ( File.exists?(path) && ((Time.now - File.mtime(path)) > WAIT_TIME) )
         @log.msgerror(@lt +"Lock timeout on #{x},#{y},#{z}  ")
         File.delete(path)
       end
@@ -511,3 +528,5 @@ class TileLockerFile
   
 end
 
+
+require "rmagick_tile_engine"

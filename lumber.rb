@@ -176,6 +176,72 @@ class LumberNoFile
     
 end
 
+##
+# Stub class, only logs to stdout..
+
+class LumberAppendNoFile < LumberNoFile
+    
+    #basic rules
+    # debug - stuff only of interest to debugging, on if @debug
+    # info - noisy stuff, on if not quiet
+    # error - always on
+    
+    
+    def initialize ( cfg, error_lst, debug_lst, info_lst)
+        @cfg = cfg
+        
+        ##
+        # Defaults
+        @debug = false
+        @info = false
+        @quiet = false
+        @verbose = false
+        
+        @verbose = true if (cfg["verbose"])
+        @info = true if (cfg["info"])
+        @quiet = true if (cfg["quiet"])
+        @debug = true if (cfg["debug"])
+        
+        @error_fd = error_lst
+        @debug_fd = debug_lst
+        @info_fd = info_lst
+        
+        msgerror("Start.")
+        msginfo("Logging Started.")
+    end
+    
+    def msginfo(s)
+        return if (@quiet)
+        return if (!@verbose)
+        format_for_output(@info_fd, "INFO", s)
+    end
+    
+    def loginfo(s)
+        msginfo(s)
+    end
+    
+    def msgdebug(s)
+        return if ( !@debug || @quiet)
+        format_for_output(@info_fd, "DEBUG", s)
+    end
+    
+    def msgstatus( s)
+        return if ( !@verbose || @quiet)
+    end
+    
+      
+    def msgerror(s)
+        format_for_output(@info_fd, "ERROR", s)
+        format_for_output(@error_fd, "ERROR", s)
+    end
+    
+    private
+        
+    def format_for_output (out,label,s)
+        out << sprintf("(%s:%s) %s\n", get_time.strftime("%Y/%m/%d %H:%M:%S"), label, s)
+    end
+end
+
 
 class HttpLumber < Lumber
      def initialize ( cfg )

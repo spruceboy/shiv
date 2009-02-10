@@ -25,8 +25,15 @@ class KMLHandler < MongrelWelder
         head["Content-Type"] = "application/vnd.google-earth.kml+xml"
         
         uri = request.params["REQUEST_URI"]
+        give404(response, "Try a real url, thats not nil.") if ( uri == nil)
         uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
+        
+        # uri once cleaned up, shoudl not be empty..
+        give404(response, "Try a real url, perhaps one that is valid.") if ( uri == "")
+        
+        #uri should be for the form /set/lt_x/tl_y/br_x/br_y
         uri = uri.split("/")
+        give404(response, "Try a real url, perhaps one that is valid.") if ( uri.length != 5 )
         
         set = uri[0]
         tl_x = uri[1].to_f
@@ -34,6 +41,8 @@ class KMLHandler < MongrelWelder
         br_x = uri[3].to_f
         br_y = uri[4].to_f
         
+        ##
+        # This is the case if things are really broken - possibly not possible now..
         if ( br_x == nil || br_y == nil || tl_x == nil|| tl_y == nil||set==nil)
             br_x = "180.0"
             br_y = "-90"

@@ -21,7 +21,7 @@ require "mailer"
 # Mongrel helper master class - should contain everything that is shared by mongrel handlers..
 # Don't create one, subclass one..
 
-class MongrelWelder < Mongrel::HttpHandler
+class MongrelWelder #< Mongrel::HttpHandler
     private
       
       ##
@@ -75,7 +75,106 @@ class MongrelWelder < Mongrel::HttpHandler
 	    return stat.size
 	 end
       end
+      
+      
+      ###
+      # Send out a 404 error, used to give a simple/quick error to usr
+      def give404(responce, msg)
+	response.start(404) do |head,out|
+            head["Content-Type"] = "text/plain"
+            out.write("#{msg}\n")
+            out.write("Sadness...\n")
+	end
+      end
 end
+
+
+####
+# Rack style handler, used for rack based configs..
+
+class RackWelder
+    ETAG_FORMAT="\"%x-%x-%x\""
+    HTTP_IF_MODIFIED_SINCE="HTTP_IF_MODIFIED_SINCE"
+    HTTP_IF_NONE_MATCH="HTTP_IF_NONE_MATCH"
+    ETAG  = "ETag"
+    CONTENT_TYPE = "Content-Type"
+    CONTENT_LENGTH = "Content-Length"
+    
+    def call(env)
+	request = Rack::Request.new(env)
+	response = Rack::Response.new
+	process(request, response)
+	[response.status, response.headers, response.body]
+    end
+
+    private
+      
+      ##
+      # Taken from dir handler of mongrel, adapted to rack suitiblity.
+      def send_file_full(req_path, request, response,type="png", header_only=false)
+	 stat = File.stat(req_path)
+
+         # Set the last modified times as well and etag for all files
+	 mtime = stat.mtime
+         # Calculated the same as apache, not sure how well the works on win32
+	 etag = ETAG_FORMAT % [mtime.to_i, stat.size, stat.ino]
+
+         modified_since = request.params[HTTP_IF_MODIFIED_SINCE]
+	 none_match = request.params[HTTP_IF_NONE_MATCH]
+
+         # test to see if this is a conditional request, and test if
+	 # the response would be identical to the last response
+         same_response = case
+                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil : false
+                      when modified_since && last_response_time > Time.now                                  : false
+                      when modified_since && mtime > last_response_time                                     : false
+                      when none_match     && none_match == '*'                                              : false
+                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              : false
+                      else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
+                      end
+
+	 header = response.header
+         header[ETAG] = etag
+
+	 if same_response
+	    response.status = 304
+	 else
+
+	    # First we setup the headers and status then we do a very fast send on the socket directly
+
+            # Support custom responses except 404, which is the default. A little awkward. 
+	    response.status = 200 if response.status == 404
+	    header[Mongrel::Const::LAST_MODIFIED] = mtime.httpdate
+   
+	    header[Mongrel::Const::CONTENT_TYPE] = "image/#{type}"
+
+   	    # send a status with out content length
+   	    #response.send_status(stat.size)
+	    #response.send_header
+	    #response.send_file(req_path, stat.size < 16*1024 * 2)
+	    response.body = Rack::File.new(req_path)
+	    return stat.size
+	 end
+      end
+      
+      
+      ###
+      # Send out a 404 error, used to give a simple/quick error to usr
+      
+###
+# FIXME!
+=begin      def give404(responce, msg)
+	headers = responce.headers
+	responce.status = 404
+	response.start(404) do |head,out|
+            head["Content-Type"] = "text/plain"
+            out.write("#{msg}\n")
+            out.write("Sadness...\n")
+	end
+      end
+=end
+end
+
 
 
 
@@ -84,6 +183,12 @@ end
 ##
 # Simplest Handler of them all...  Not sure if used or not
 
+
+#************************************************************************************************
+
+##
+# Simplest Handler of them all...  Not sure if used or not
+# For mongrel
 class SimpleHandler < MongrelWelder 
     def initialize ( log)
       @logger = log
@@ -92,11 +197,25 @@ class SimpleHandler < MongrelWelder
     def process(request, response)
       @logger.puts("hit -> #{request.params[@REMOTE_IP_TAG]} -> #{request.params["REQUEST_URI"]}")
       response.start(200) do |head,out|
-        head["Content-Type"] = "text/plain"
-        out.write("hello!\n")
+	response.headers[CONTENT_TYPE] = "text/plain"
       end
     end
 end
+
+
+#For rack..
+class SimpleHandlerRack < RackWelder
+    def initialize ( )
+	#djlsakjflaj
+    end
+    def process(request, response)
+      response.status = 200
+      response.body = ["hello!\n"]
+      response.headers["Content-Type"] = "text/plain"
+      response.headers[CONTENT_LENGTH] = response.body.join.length.to_s
+    end
+end
+
 
 
 
@@ -128,7 +247,8 @@ class TileHandler < MongrelWelder
 	@cfg = cfg
 	@url_root = http_cfg["base"]    #/tag/
 	@http_cfg = http_cfg
-	@tile_engine =  Imlib2TileEngine.new(cfg, log)   #Use the imlib2 engine..
+	#@tile_engine =  Imlib2TileEngine.new(cfg, log)   #Use the imlib2 engine..
+	@tile_engine =  ExternalTileEngine.new(cfg, log)   #Use the external tile engine..
 	
 	@lt = self.class.to_s + ":"
 	@logger.loginfo(@lt+"Starting")
@@ -153,7 +273,9 @@ class TileHandler < MongrelWelder
             ##
             #Remove prefix from url..
             uri = request.params["REQUEST_URI"]
+            give404(response, "Try a real url, thats not nil.") if ( uri == nil)
             uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
+            give404(response, "Try a real url, perhaps one that is valid.") if ( uri == "")
             uri = uri.split("/")
               
             ##
@@ -236,7 +358,8 @@ class BBoxTileHandler < MongrelWelder
 	@cfg = cfg
 	@http_cfg = http_cfg
 	@url_root = http_cfg["base"]
-	@tile_engine =  Imlib2TileEngine.new(cfg, log)
+	#@tile_engine =  Imlib2TileEngine.new(cfg, log)
+	@tile_engine =  ExternalTileEngine.new(cfg, log)   #Use the external tile engine..
 	@lt = self.class.to_s + ":"
 	@logger.loginfo(@lt+"Starting")
     end
@@ -341,3 +464,17 @@ end
    private
       
  end
+#For rack..
+class BenchmarkHandlerRack < RackWelder
+    def initialize ( )
+	#djlsakjflaj
+    end
+    def process(request, response)
+      #request["PATH_INFO"] = "test_file.jpg"
+      #response.status = 200
+      response.body = []
+      response.header["X-Sendfile"] = "/var/www/html/distro/test_file.jpg"
+      response.headers[CONTENT_TYPE] = "image/jpeg"
+      response.headers[CONTENT_LENGTH] = "0"#File.size?("test_file.jpg").to_s
+    end
+end

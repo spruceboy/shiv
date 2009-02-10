@@ -32,20 +32,17 @@ def shuffle (s )
      return s
 end
 
-def do_tile(cfg, x,y,z,waggle)
+def do_tile(cfg, x,y,z,waggle, config_path, name)
      waffle = 0
      max = 2**z-1
      STDOUT.printf(" #{z} ")
      (x-waggle).upto(x+waggle) do |i|
-	   next if ( i%2 == 0)
 	  (y-waggle).upto(y+waggle) do |j|
-	       next if ( j%2 == 0)
 	       i = 0 if (i < 0)
 	       j = 0 if (j < 0)
 	       i = max if (i >max)
 	       j = max if (j > max)
-	       url = "http://swmha.gina.alaska.edu/tilesrv/#{cfg["title"]}/tile/#{i}/#{j}/#{z}"
-	       @downloader.easy_download(url , "/dev/null")
+	       system("ruby", "tile_grabber.rb", config_path, name, "#{i}", "#{j}", "#{z}")
 	       waffle += 1
 	       if ( waffle%50 == 0)
 		    STDOUT.printf(".")
@@ -60,7 +57,6 @@ def do_tile(cfg, x,y,z,waggle)
 end
 
 
-@downloader = SimpleCurbHttpClient.new()
 
 shif_conf = File.open(ARGV[0]){|x| YAML.load(x) }
 towns_conf = File.open(ARGV[1]){|x| YAML.load(x) }
@@ -78,8 +74,9 @@ shif_conf["tile_engines"].each do |item|
 	  STDOUT.flush()
 	  town = towns_conf[town_k]
 	  pp town
-	  tile = get_tile(town[key][0], town[key][1], z, item)
-	  do_tile(item, tile["x"], tile["y"], z, fiddle)
+	  tile = get_tile(town[key][0], town[key][1], z, item )
+	  do_tile(item, tile["x"], tile["y"], z, fiddle, ARGV[0], ARGV[2])
+	  exit(-1)
     end
     #Curl::Easy.download(ARGV.first + "/#{x}/#{y}/#{z}" , "/dev/null")
 end
