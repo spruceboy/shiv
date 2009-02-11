@@ -1,3 +1,6 @@
+Basic notes for shiv tileserving benchmarks using different server engines..
+For a single 20k tile, tests run w/ab like: ab -c 100 -n 4000 
+
 Webrick:
 Requests per second:    108.91 [#/sec] (mean)
               min  mean[+/-sd] median   max
@@ -25,6 +28,18 @@ Connect:        0    0   1.2      0      12
 Processing:    18  101  25.2     91     148
 Waiting:       17  100  25.2     91     148
 Total:         18  101  25.0     91     151
+
+passenger:
+
+Requests per second:    1459.39 [#/sec] (mean)
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    2   2.8      2      19
+Processing:    11   64  11.3     63     166
+Waiting:        9   49  10.5     48     155
+Total:         12   67  11.8     66     168
+
 
 Apache (native)
 Requests per second:    4461.60 [#/sec] (mean)

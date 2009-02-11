@@ -1,15 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Mongrel related happyness... And it seems like tommarrow might not come...
-#
-
-# Helper class w/some mongrel speeder-uppers...
-#
-# Has things that most mongrel handler sub classes should have..
-
-##
-# Provides heat map related stuff...
-#require "heat_map_tools"
+# Web serving related happyness... And it seems like tommarrow might not come...
 
 ##
 # provides a way to mail errors etc..
@@ -17,89 +8,25 @@ require "mailer"
 
 #************************************************************************************************
 
+
 ##
-# Mongrel helper master class - should contain everything that is shared by mongrel handlers..
-# Don't create one, subclass one..
-
-class MongrelWelder #< Mongrel::HttpHandler
-    private
-      
-      ##
-      # Taken from dir handler..
-      def send_file_full(req_path, request, response,type="png", header_only=false)
-	 stat = File.stat(req_path)
-
-         # Set the last modified times as well and etag for all files
-	 mtime = stat.mtime
-         # Calculated the same as apache, not sure how well the works on win32
-	 etag = Mongrel::Const::ETAG_FORMAT % [mtime.to_i, stat.size, stat.ino]
-
-         modified_since = request.params[Mongrel::Const::HTTP_IF_MODIFIED_SINCE]
-	 none_match = request.params[Mongrel::Const::HTTP_IF_NONE_MATCH]
-
-         # test to see if this is a conditional request, and test if
-	 # the response would be identical to the last response
-         same_response = case
-                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil : false
-                      when modified_since && last_response_time > Time.now                                  : false
-                      when modified_since && mtime > last_response_time                                     : false
-                      when none_match     && none_match == '*'                                              : false
-                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              : false
-                      else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
-                      end
-
-	 header = response.header
-         header[Mongrel::Const::ETAG] = etag
-
-	 if same_response
-	    response.start(304) {}
-	    return 0
-	 else
-
-	    # First we setup the headers and status then we do a very fast send on the socket directly
-
-            # Support custom responses except 404, which is the default. A little awkward. 
-	    response.status = 200 if response.status == 404
-	    header[Mongrel::Const::LAST_MODIFIED] = mtime.httpdate
-   
-	    header[Mongrel::Const::CONTENT_TYPE] = "image/#{type}"
-
-   	    # send a status with out content length
-   	    response.send_status(stat.size)
-	    response.send_header
-
-	    if not header_only
-	       #response.send_file(req_path, stat.size < Const::CHUNK_SIZE * 2)
-	       response.send_file(req_path, stat.size < 16*1024 * 2)
-	    end
-	    return stat.size
-	 end
-      end
-      
-      
-      ###
-      # Send out a 404 error, used to give a simple/quick error to usr
-      def give404(responce, msg)
-	response.start(404) do |head,out|
-            head["Content-Type"] = "text/plain"
-            out.write("#{msg}\n")
-            out.write("Sadness...\n")
-	end
-      end
-end
-
-
-####
-# Rack style handler, used for rack based configs..
+# Base class, don't instatuate, use sub-classes..
 
 class RackWelder
+    
+    # constants for headers.  Rack should have these, perhaps it does and I am stupid.
     ETAG_FORMAT="\"%x-%x-%x\""
     HTTP_IF_MODIFIED_SINCE="HTTP_IF_MODIFIED_SINCE"
     HTTP_IF_NONE_MATCH="HTTP_IF_NONE_MATCH"
     ETAG  = "ETag"
     CONTENT_TYPE = "Content-Type"
     CONTENT_LENGTH = "Content-Length"
+    LAST_MODIFIED = "Last-Modified"
     
+    
+    
+    ##
+    # Stub to be used for driving directly by rack, mainly for testing. Not for real use.
     def call(env)
 	request = Rack::Request.new(env)
 	response = Rack::Response.new
@@ -111,6 +38,10 @@ class RackWelder
       
       ##
       # Taken from dir handler of mongrel, adapted to rack suitiblity.
+      # Does not work right now - the Rack::File.new(req_path) logic is screwy
+      #
+      #  FIXME!!!
+      #
       def send_file_full(req_path, request, response,type="png", header_only=false)
 	 stat = File.stat(req_path)
 
@@ -144,9 +75,9 @@ class RackWelder
 
             # Support custom responses except 404, which is the default. A little awkward. 
 	    response.status = 200 if response.status == 404
-	    header[Mongrel::Const::LAST_MODIFIED] = mtime.httpdate
+	    header[LAST_MODIFIED] = mtime.httpdate
    
-	    header[Mongrel::Const::CONTENT_TYPE] = "image/#{type}"
+	    header[CONTENT_TYPE] = "image/#{type}"
 
    	    # send a status with out content length
    	    #response.send_status(stat.size)
@@ -158,23 +89,23 @@ class RackWelder
       end
       
       
-      ###
-      # Send out a 404 error, used to give a simple/quick error to usr
-      
-###
-# FIXME!
-=begin      def give404(responce, msg)
+    ###
+    # General purpose out to http function..
+    def give_X(response, status, mime_type, msg)
 	headers = responce.headers
-	responce.status = 404
-	response.start(404) do |head,out|
-            head["Content-Type"] = "text/plain"
-            out.write("#{msg}\n")
-            out.write("Sadness...\n")
-	end
-      end
-=end
+	responce.status =status
+	response.body = [msg]
+	response.headers["Content-Type"] = mime_type
+	response.headers[CONTENT_LENGTH] = response.body.join.length.to_s
+    end
+    
+    ###
+    # Send out a 404 error, used to give a simple/quick error to usr
+    def give_X(response, status, mime_type, msg)
+    def give404(response, msg)
+	give_X(response, 404, "plain/text", msg)
+    end
 end
-
 
 
 
@@ -189,7 +120,7 @@ end
 ##
 # Simplest Handler of them all...  Not sure if used or not
 # For mongrel
-class SimpleHandler < MongrelWelder 
+class SimpleHandler < RackWelder 
     def initialize ( log)
       @logger = log
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
@@ -223,7 +154,7 @@ end
 ##
 # Exit Handler - quits when hit...  needs more safety!
 
-class ExitHandler < MongrelWelder 
+class ExitHandler < RackWelder 
     def initialize ( log)
       @logger = log
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
@@ -238,7 +169,7 @@ end
 ###
 # Tile Handler - does google map like requests..
 # Handles google maps like tile requests, of the form /tag/tiles/x/y/z
-class TileHandler < MongrelWelder
+class TileHandler < RackWelder
     
     def initialize (cfg, log, http_cfg)
         
@@ -352,7 +283,7 @@ end
 # Handels google earth like tile requests, or more acurately, tile requests based off of lat/long requests rather than explicit tile numberings..
 # Reguests are like /tag/bbox/minx/miny/maxx/maxy
   
-class BBoxTileHandler < MongrelWelder
+class BBoxTileHandler < RackWelder
     def initialize (cfg, log, http_cfg)
 	@logger = log
 	@cfg = cfg
@@ -441,7 +372,7 @@ end
 ###
 # Handler designed to show how fast a mongrel should go, doing only the basic amount of work to dump a file..
 # Testing only...
- class BenchmarkHandler < MongrelWelder
+ class BenchmarkHandler < RackWelder
    def initialize ( log)
       @logger = log
    end
