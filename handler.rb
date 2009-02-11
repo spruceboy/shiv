@@ -105,6 +105,47 @@ class RackWelder
     def give404(response, msg)
 	give_X(response, 404, "plain/text", msg)
     end
+    
+    ###
+    # Only tested with apache - not sure what lighttp /fooxxx http does
+    # todo -> 
+    def send_file_xsendfile(request, response,path, mime_type)
+	
+	#Calculate etag, not sure if needed, perhaps apache does this already
+	stat = File.stat(path)
+        # Set the last modified times as well and etag for all files
+	mtime = stat.mtime
+        # Calculated the same as apache, not sure how well the works on win32
+	etag = ETAG_FORMAT % [mtime.to_i, stat.size, stat.ino]
+
+        modified_since = request.params[HTTP_IF_MODIFIED_SINCE]
+	none_match = request.params[HTTP_IF_NONE_MATCH]
+
+         # test to see if this is a conditional request, and test if
+	 # the response would be identical to the last response
+	 # Not sure whats going on here - stole from mongrels dir handler, which probibly does everything correctly..
+        same_response = case
+                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil : false
+                      when modified_since && last_response_time > Time.now                                  : false
+                      when modified_since && mtime > last_response_time                                     : false
+                      when none_match     && none_match == '*'                                              : false
+                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              : false
+                      else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
+                      end
+
+	response.header[ETAG] = etag
+
+	if same_response
+	    response.status = 304
+	else
+	    #Status?
+	    response.header["X-Sendfile"] = path
+	    response.headers[CONTENT_TYPE] = mime_type
+	    response.headers[CONTENT_LENGTH] = "0"
+	end
+	 
+	response.body = []
+    end
 end
 
 
