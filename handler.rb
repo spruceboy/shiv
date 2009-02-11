@@ -35,14 +35,20 @@ class RackWelder
     end
 
     private
-      
+    
+	##
+	# Sends out a file on disk - switchs between actual file sending and handoff file sending, depending on usage.
+	def send_file_full(req_path, request, response,mime_type="image/png", header_only=false )
+	    return send_file_xsendfile(request, response,req_path, mime_type)
+	end
+    
       ##
       # Taken from dir handler of mongrel, adapted to rack suitiblity.
       # Does not work right now - the Rack::File.new(req_path) logic is screwy
       #
       #  FIXME!!!
       #
-      def send_file_full(req_path, request, response,type="png", header_only=false)
+      def send_file_full_rack(req_path, request, response,type="png", header_only=false)
 	 stat = File.stat(req_path)
 
          # Set the last modified times as well and etag for all files
@@ -77,7 +83,7 @@ class RackWelder
 	    response.status = 200 if response.status == 404
 	    header[LAST_MODIFIED] = mtime.httpdate
    
-	    header[CONTENT_TYPE] = "image/#{type}"
+	    header[CONTENT_TYPE] = type
 
    	    # send a status with out content length
    	    #response.send_status(stat.size)
@@ -92,8 +98,8 @@ class RackWelder
     ###
     # General purpose out to http function..
     def give_X(response, status, mime_type, msg)
-	headers = responce.headers
-	responce.status =status
+	headers = response.headers
+	response.status =status
 	response.body = [msg]
 	response.headers["Content-Type"] = mime_type
 	response.headers[CONTENT_LENGTH] = response.body.join.length.to_s
@@ -101,7 +107,6 @@ class RackWelder
     
     ###
     # Send out a 404 error, used to give a simple/quick error to usr
-    def give_X(response, status, mime_type, msg)
     def give404(response, msg)
 	give_X(response, 404, "plain/text", msg)
     end
@@ -145,6 +150,8 @@ class RackWelder
 	end
 	 
 	response.body = []
+	
+	return stat.size
     end
 end
 
@@ -167,29 +174,10 @@ class SimpleHandler < RackWelder
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     end
     def process(request, response)
-      @logger.puts("hit -> #{request.params[@REMOTE_IP_TAG]} -> #{request.params["REQUEST_URI"]}")
-      response.start(200) do |head,out|
-	response.headers[CONTENT_TYPE] = "text/plain"
-      end
+      @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
+      give_X(response, 200, "text/plain", "Hello #{request.env[@REMOTE_IP_TAG]}.")
     end
 end
-
-
-#For rack..
-class SimpleHandlerRack < RackWelder
-    def initialize ( )
-	#djlsakjflaj
-    end
-    def process(request, response)
-      response.status = 200
-      response.body = ["hello!\n"]
-      response.headers["Content-Type"] = "text/plain"
-      response.headers[CONTENT_LENGTH] = response.body.join.length.to_s
-    end
-end
-
-
-
 
 #************************************************************************************************
 ##
@@ -420,14 +408,14 @@ end
    
    def process(request, response)
       
-      @logger.puts("hit -> #{request.params[@REMOTE_IP_TAG]} -> #{request.params["REQUEST_URI"]}")
+      @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
       start_tm = Time.now
       # Log access...
       @logger.log_access(request)
       
       ##
       # Do request..
-      size = send_file_full("test_tile.jpg",request,response)
+      size = send_file_full("/var/www/html/distro/test_file.jpg", request, response,"image/jpeg")
       
       #Log xfer..
       @logger.log_xfer(request,response,size, Time.now-start_tm)

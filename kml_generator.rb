@@ -7,7 +7,7 @@ require 'yaml'
 
 
 
-class KMLHandler < MongrelWelder
+class KMLHandler < RackWelder
   
   def initialize ( log,cfg)
     @logger = log

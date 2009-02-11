@@ -164,6 +164,20 @@ class LumberNoFile
         msgstatus(s)
     end
     
+    def log_xfer ( request, response,size,tm)
+        xfer =  { "access" => get_time,
+            "url"=>request.params["REQUEST_URI"],
+            "host" => request.params["REMOTE_ADDR"],
+            "sz" => size,
+            "tm" => tm }
+        yml = YAML.dump(xfer)
+        STDOUT.write(yml)
+    end
+    
+    def log_access(request)
+        #nothing..
+    end
+    
     private
     
     def format_for_output (out,label,s)
