@@ -173,7 +173,7 @@ class SimpleHandler < RackWelder
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     end
     def process(request, response)
-      @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
+      @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
       give_X(response, 200, "text/plain", "Hello #{request.env[@REMOTE_IP_TAG]}.")
     end
 end
@@ -188,7 +188,7 @@ class ExitHandler < RackWelder
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     end
     def process(request, response)
-      @logger.puts("Got Exit request -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
+      @logger.puts("Got Exit request -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
       exit(-1)
     end
 end
@@ -221,7 +221,7 @@ class TileHandler < RackWelder
             mn = "process:"  #name of this method.. used for logging..
             
             #log request
-            @logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
+            @logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
             
             #time of start..
             start_tm = Time.now
@@ -231,7 +231,7 @@ class TileHandler < RackWelder
             
             ##
             #Remove prefix from url..
-            uri = request.env["REQUEST_URI"]
+            uri = request.env["PATH_INFO"]
             give404(response, "Try a real url, thats not nil.") if ( uri == nil)
             uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
             give404(response, "Try a real url, perhaps one that is valid.") if ( uri == "")
@@ -249,16 +249,8 @@ class TileHandler < RackWelder
                     #Log xfer..
                     @logger.log_xfer(request,response,size, Time.now-start_tm)
                 else
-                    @logger.logerr("Bad uri '#{request.env["REQUEST_URI"]} from #{request.env[@REMOTE_IP_TAG]}")
-                    response.start(404) do |head,out|
-                        head["Content-Type"] = "text/plain"
-                        out.write("The uri, #{request.env["REQUEST_URI"]}, is not good.\n")
-                        out.write("URI length is #{uri.length}")
-                        0.upto(uri.length-1) do |index|
-                            out.write("{[#{index}]=>[#{uri[index]}]}")
-                        end
-                        out.write("Sadness...\n")
-                    end
+                    @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
+                    give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
                 end
                 return		# Done with no-tile related stuff...
             end
@@ -329,7 +321,7 @@ class BBoxTileHandler < RackWelder
        
 	mn = "process:"
 	  
-	@logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
+	@logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
 	
 	
 	# Log access...
@@ -341,7 +333,7 @@ class BBoxTileHandler < RackWelder
 	
 	##
 	#Remove prefix from url..
-	uri = request.env["REQUEST_URI"]
+	uri = request.env["PATH_INFO"]
 	uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
 	uri = uri.split("/")
 	
@@ -350,16 +342,8 @@ class BBoxTileHandler < RackWelder
 	# Example:
 	#"/drg_geo/bbox/-150.46875000000000000000/66.44531250000000000000/-149.76562500000000000000/66.79687500000000000000"
 	if (uri.length != 7 || uri[2].downcase != "bbox")
-	    @logger.logerr("Bad uri '#{request.env["REQUEST_URI"]} from #{request.env[@REMOTE_IP_TAG]}")
-		response.start(404) do |head,out|
-		head["Content-Type"] = "text/plain"
-		out.write("The uri, #{request.env["REQUEST_URI"]}, is not good.\n")
-		0.upto(uri.length-1) do |index|
-		    out.write("{[#{index}]=>[#{uri[index]}]}")
-		end
-		out.write("URI length is #{uri.length}")
-		out.write("Sadness...\n")
-	    end
+	    @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
+	    give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
 	    return;
 	end
 	
@@ -407,7 +391,7 @@ end
    
    def process(request, response)
       
-      @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
+      @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
       start_tm = Time.now
       # Log access...
       @logger.log_access(request)

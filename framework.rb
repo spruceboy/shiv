@@ -6,7 +6,7 @@
 # this was the starting point: http://theexciter.com/files/cabinet.rb.txt , but only a rough one
 
 ## Error generating stub class... silly
-class HttpError
+class HttpError < RackWelder
   def initialize ( request, response, status, msg, mime_type="plain/text")
     response.status =status
     response.body = [msg]
@@ -45,12 +45,11 @@ class Roundhouse
       @logger.logstatus("Up.")
     end
     
-    
     #Rack entry point..
     def call(env)
 	request = Rack::Request.new(env)
 	response = Rack::Response.new
-	handler = route(env["REQUEST_URI"])
+	handler = route(env["PATH_INFO"])
 	if (!handler)
           HttpError.new(request, response, 404, "Lost?")
 	else
@@ -59,19 +58,20 @@ class Roundhouse
 	[response.status, response.headers, response.body]
     end
     
-    
-    
-    
     private
     
-    def reg(url, handler)
+    def reg(stock_url, handler)
+      url=stock_url.split(/\/+/).join("/")
       @logger.msginfo("Mounting up #{url} with #{handler.class.to_s}")
       @routes[url] = {"handler"=>handler,"path_length" => url.length}
     end
     
-    def route(url)
+    def route(stock_url)
+      url=stock_url.split(/\/+/).join("/")
       @routes.keys.each do |x|
-        if (url[0, @routes[x]["path_length"]] == url[0,@routes[x]["path_length"]])
+        @logger.msginfo("Main:route:Looking at '#{url}' (#{url[0,@routes[x]['path_length']]}) for '#{x}'")
+        if (x == url[0,@routes[x]["path_length"]])
+          @logger.msginfo("Main:route: #{@routes[x]["handler"].class.to_s} will do '#{url}'")
           return @routes[x]["handler"]
         end
       end
