@@ -56,8 +56,8 @@ class RackWelder
          # Calculated the same as apache, not sure how well the works on win32
 	 etag = ETAG_FORMAT % [mtime.to_i, stat.size, stat.ino]
 
-         modified_since = request.params[HTTP_IF_MODIFIED_SINCE]
-	 none_match = request.params[HTTP_IF_NONE_MATCH]
+         modified_since = request.env[HTTP_IF_MODIFIED_SINCE]
+	 none_match = request.env[HTTP_IF_NONE_MATCH]
 
          # test to see if this is a conditional request, and test if
 	 # the response would be identical to the last response
@@ -123,8 +123,8 @@ class RackWelder
         # Calculated the same as apache, not sure how well the works on win32
 	etag = ETAG_FORMAT % [mtime.to_i, stat.size, stat.ino]
 
-        modified_since = request.params[HTTP_IF_MODIFIED_SINCE]
-	none_match = request.params[HTTP_IF_NONE_MATCH]
+        modified_since = request.env[HTTP_IF_MODIFIED_SINCE]
+	none_match = request.env[HTTP_IF_NONE_MATCH]
 
          # test to see if this is a conditional request, and test if
 	 # the response would be identical to the last response
@@ -138,12 +138,11 @@ class RackWelder
                       else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
                       end
 
-	response.header[ETAG] = etag
-
 	if same_response
 	    response.status = 304
 	else
 	    #Status?
+	    response.header[ETAG] = etag
 	    response.header["X-Sendfile"] = path
 	    response.headers[CONTENT_TYPE] = mime_type
 	    response.headers[CONTENT_LENGTH] = "0"
@@ -189,7 +188,7 @@ class ExitHandler < RackWelder
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     end
     def process(request, response)
-      @logger.puts("Got Exit request -> #{request.params[@REMOTE_IP_TAG]} -> #{request.params["REQUEST_URI"]}")
+      @logger.puts("Got Exit request -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
       exit(-1)
     end
 end
@@ -222,7 +221,7 @@ class TileHandler < RackWelder
             mn = "process:"  #name of this method.. used for logging..
             
             #log request
-            @logger.loginfo(@lt+mn + "hit -> #{request.params[@REMOTE_IP_TAG]} -> #{request.params["REQUEST_URI"]}")
+            @logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
             
             #time of start..
             start_tm = Time.now
@@ -232,7 +231,7 @@ class TileHandler < RackWelder
             
             ##
             #Remove prefix from url..
-            uri = request.params["REQUEST_URI"]
+            uri = request.env["REQUEST_URI"]
             give404(response, "Try a real url, thats not nil.") if ( uri == nil)
             uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
             give404(response, "Try a real url, perhaps one that is valid.") if ( uri == "")
@@ -250,10 +249,10 @@ class TileHandler < RackWelder
                     #Log xfer..
                     @logger.log_xfer(request,response,size, Time.now-start_tm)
                 else
-                    @logger.logerr("Bad uri '#{request.params["REQUEST_URI"]} from #{request.params[@REMOTE_IP_TAG]}")
+                    @logger.logerr("Bad uri '#{request.env["REQUEST_URI"]} from #{request.env[@REMOTE_IP_TAG]}")
                     response.start(404) do |head,out|
                         head["Content-Type"] = "text/plain"
-                        out.write("The uri, #{request.params["REQUEST_URI"]}, is not good.\n")
+                        out.write("The uri, #{request.env["REQUEST_URI"]}, is not good.\n")
                         out.write("URI length is #{uri.length}")
                         0.upto(uri.length-1) do |index|
                             out.write("{[#{index}]=>[#{uri[index]}]}")
@@ -330,7 +329,7 @@ class BBoxTileHandler < RackWelder
        
 	mn = "process:"
 	  
-	@logger.loginfo(@lt+mn + "hit -> #{request.params[@REMOTE_IP_TAG]} -> #{request.params["REQUEST_URI"]}")
+	@logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["REQUEST_URI"]}")
 	
 	
 	# Log access...
@@ -342,7 +341,7 @@ class BBoxTileHandler < RackWelder
 	
 	##
 	#Remove prefix from url..
-	uri = request.params["REQUEST_URI"]
+	uri = request.env["REQUEST_URI"]
 	uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
 	uri = uri.split("/")
 	
@@ -351,10 +350,10 @@ class BBoxTileHandler < RackWelder
 	# Example:
 	#"/drg_geo/bbox/-150.46875000000000000000/66.44531250000000000000/-149.76562500000000000000/66.79687500000000000000"
 	if (uri.length != 7 || uri[2].downcase != "bbox")
-	    @logger.logerr("Bad uri '#{request.params["REQUEST_URI"]} from #{request.params[@REMOTE_IP_TAG]}")
+	    @logger.logerr("Bad uri '#{request.env["REQUEST_URI"]} from #{request.env[@REMOTE_IP_TAG]}")
 		response.start(404) do |head,out|
 		head["Content-Type"] = "text/plain"
-		out.write("The uri, #{request.params["REQUEST_URI"]}, is not good.\n")
+		out.write("The uri, #{request.env["REQUEST_URI"]}, is not good.\n")
 		0.upto(uri.length-1) do |index|
 		    out.write("{[#{index}]=>[#{uri[index]}]}")
 		end

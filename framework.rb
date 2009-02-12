@@ -1,0 +1,82 @@
+#!/usr/bin/env ruby
+
+
+########################
+# Very small framework for shiv, only
+# this was the starting point: http://theexciter.com/files/cabinet.rb.txt , but only a rough one
+
+## Error generating stub class... silly
+class HttpError
+  def initialize ( request, response, status, msg, mime_type="plain/text")
+    response.status =status
+    response.body = [msg]
+    response.headers["Content-Type"] = mime_type
+    response.headers[CONTENT_LENGTH] = response.body.join.length.to_s
+  end
+end
+
+## Passes requests off to the relevent handlers
+class Roundhouse
+    def initialize(cfg)
+      @routes = {}
+      #get a logger..
+      @logger = TileLumber.new(cfg["log"])
+      @logger.logstatus("Starting.")
+      
+      #mount up the /benchmark area..
+      reg( cfg["http"]["base"] + "/benchmark", BenchmarkHandler.new(@logger))
+      
+      #mount up the /exit area..
+      # Decide what to do here..
+      #reg( cfg["http"]["base"] + "/magic/exit", ExitHandler.new(logger))
+      
+      
+      #loop though the tile engines in the config file, and fire up and mount each..
+      cfg["tile_engines"].each do |tcfg|
+         path = cfg["http"]["base"] + "/" + tcfg["title"] + "/tile/"
+         @logger.msginfo("Main:Setting up '#{path}''")
+         reg(path, TileHandler.new(tcfg, @logger, cfg["http"]))
+         path = cfg["http"]["base"] + "/" + tcfg["title"] + "/bbox/"
+         @logger.msginfo("Main:Setting up '#{path}''")
+         reg(path, BBoxTileHandler.new(tcfg, @logger, cfg["http"]))
+      end
+      reg(cfg["http"]["base"] + "/" + "kml", KMLHandler.new(@logger, cfg["kml"]))
+      
+      @logger.logstatus("Up.")
+    end
+    
+    
+    #Rack entry point..
+    def call(env)
+	request = Rack::Request.new(env)
+	response = Rack::Response.new
+	handler = route(env["REQUEST_URI"])
+	if (!handler)
+          HttpError.new(request, response, 404, "Lost?")
+	else
+          sz = handler.process(request, response)
+        end
+	[response.status, response.headers, response.body]
+    end
+    
+    
+    
+    
+    private
+    
+    def reg(url, handler)
+      @logger.msginfo("Mounting up #{url} with #{handler.class.to_s}")
+      @routes[url] = {"handler"=>handler,"path_length" => url.length}
+    end
+    
+    def route(url)
+      @routes.keys.each do |x|
+        if (url[0, @routes[x]["path_length"]] == url[0,@routes[x]["path_length"]])
+          return @routes[x]["handler"]
+        end
+      end
+      return nil   #Bad, nothing matched
+    end
+    
+end
+

@@ -165,9 +165,11 @@ class LumberNoFile
     end
     
     def log_xfer ( request, response,size,tm)
+        #just return, no loggin needed..
+        return
         xfer =  { "access" => get_time,
-            "url"=>request.params["REQUEST_URI"],
-            "host" => request.params["REMOTE_ADDR"],
+            "url"=>request.env["REQUEST_URI"],
+            "host" => request.env["REMOTE_ADDR"],
             "sz" => size,
             "tm" => tm }
         yml = YAML.dump(xfer)
@@ -289,7 +291,7 @@ class MongrelLumber < HttpLumber
         super(cfg)
     end
     def log_access(request)
-        format_for_output(@hits_fd,"",request.params["REMOTE_ADDR"] + ":" + request.params["REQUEST_URI"])
+        format_for_output(@hits_fd,"",request.env["REMOTE_ADDR"] + ":" + request.env["REQUEST_URI"])
     end
     
     ##
@@ -309,8 +311,8 @@ class TileLumber < MongrelLumber
     
      def log_xfer ( request, response,size,tm)
         xfer =  { "access" => get_time,
-            "url"=>request.params["REQUEST_URI"],
-            "host" => request.params["REMOTE_ADDR"],
+            "url"=>request.env["REQUEST_URI"],
+            "host" => request.env["REMOTE_ADDR"],
             "sz" => size,
             "tm" => tm }
         yml = YAML.dump(xfer)
