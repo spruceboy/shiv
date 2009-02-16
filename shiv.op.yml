@@ -19,7 +19,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/drg_geo/
+  cache_dir: /hub/cache/drg_geo/
   base_extents: 
     ymax: 90.0
     xmax: 180.0
@@ -47,7 +47,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
-  cache_dir: ./cache/bdl_geo/
+  cache_dir: /hub/cache/bdl_geo/
   base_extents: 
     ymax: 90.0
     xmax: 180.0
@@ -75,7 +75,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
-  cache_dir: ./cache/bdl/
+  cache_dir: /hub/cache/bdl/
   base_extents: 
     ymax: 20037508.3427892
     xmax: 20037508.3427892
@@ -104,7 +104,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/drg/
+  cache_dir: /hub/cache/drg/
   base_extents: 
     ymax: 20037508.3427892
     xmax: 20037508.3427892
@@ -133,7 +133,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/drg_geo/
+  cache_dir: /hub/cache/drg_geo/
   base_extents: 
     ymax: 90.0
     xmax: 180.0
@@ -161,7 +161,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/charts/
+  cache_dir: /hub/cache/charts/
   base_extents: 
     ymax: 20037508.3427892
     xmax: 20037508.3427892
@@ -189,7 +189,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/charts_geo/
+  cache_dir: /hub/cache/charts_geo/
   base_extents: 
     ymax: 90.0
     xmax: 180.0
@@ -217,7 +217,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/shaded_relief_ned/
+  cache_dir: /hub/cache/shaded_relief_ned/
   base_extents: 
     ymax: 20037508.3427892
     xmax: 20037508.3427892
@@ -245,7 +245,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/shaded_relief_ned_geo/
+  cache_dir: /hub/cache/shaded_relief_ned_geo/
   base_extents: 
     ymax: 90.0
     xmax: 180.0
@@ -273,7 +273,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
-  cache_dir: ./cache/landsat_pan/
+  cache_dir: /hub/cache/landsat_pan/
   base_extents: 
     ymax: 20037508.3427892
     xmax: 20037508.3427892
@@ -301,7 +301,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
-  cache_dir: ./cache/landsat_pan_geo/
+  cache_dir: /hub/cache/landsat_pan_geo/
   base_extents: 
     ymax: 90.0
     xmax: 180.0
@@ -329,7 +329,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/google_line_work/
+  cache_dir: /hub/cache/google_line_work/
   base_extents:
     ymax: 20037508.3427892
     xmax: 20037508.3427892
@@ -349,7 +349,7 @@ tile_engines:
   temp_area: /tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/aoos_fnmoc_sst/
+  cache_dir: /hub/cache/aoos_fnmoc_sst/
   base_extents:
     ymax: 3500000.0
     xmax: 3500000.0
@@ -374,7 +374,7 @@ tile_engines:
   temp_area: /tile_temp/
   debug: false
   storage_format: png
-  cache_dir: ./cache/bdl_esri_test/
+  cache_dir: /hub/cache/bdl_esri_test/
   base_extents:
     ymax: 3500000.0
     xmax: 3500000.0
@@ -394,7 +394,7 @@ tile_engines:
   temp_area: /tile_temp/
   debug: false
   storage_format: jpg
-  cache_dir: ./cache/aoos_fnmoc_sst_geo/
+  cache_dir: /hub/cache/aoos_fnmoc_sst_geo/
   base_extents:
     ymax: 90.0
     xmax: 180.0
@@ -418,7 +418,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
-  cache_dir: ./cache/aoos_bath_geo/
+  cache_dir: /hub/cache/aoos_bath_geo/
   base_extents:
     ymax: 90.0
     xmax: 180.0
@@ -446,7 +446,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: true
   storage_format: png
-  cache_dir: ./cache/aoos_bath/
+  cache_dir: /hub/cache/aoos_bath/
   base_extents:
     ymax: 20037508.3427892
     xmax: 20037508.3427892
@@ -479,7 +479,7 @@ tile_engines:
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
-  cache_dir: ./cache/spot_ir_geo/
+  cache_dir: /hub/cache/spot_ir_geo/
   base_extents:
     ymax: 90.0
     xmax: 180.0

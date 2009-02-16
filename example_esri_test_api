@@ -10,10 +10,10 @@
       "parentLayerId" : -1, 
       "defaultVisibility" : true,
       "subLayerIds" : null
-    }, 
+    } 
   ], 
   "spatialReference" : {
-    "wkid" :102006
+    "wkid" : 102006
   }, 
   "singleFusedMapCache" : true, 
   "tileInfo" : {
@@ -47,7 +47,7 @@
       {"level" : 13, "resolution" : 3.33786010742188, "scale" : 72223.82209}, 
       {"level" : 14, "resolution" : 1.66893005371094, "scale" : 36111.91104}, 
       {"level" : 15, "resolution" : 0.834465026855469, "scale" : 18055.95552}, 
-      {"level" : 16, "resolution" : 0.417232513427734, "scale" : 9027.977761}, 
+      {"level" : 16, "resolution" : 0.417232513427734, "scale" : 9027.977761}
     ]
   }, 
   "initialExtent" : {

@@ -38,7 +38,7 @@ class Roundhouse
          reg(path, TileHandler.new(tcfg, @logger, cfg["http"]))
          path = cfg["http"]["base"] + "/" + tcfg["title"] + "/bbox/"
          @logger.msginfo("Main:Setting up '#{path}''")
-         reg(path, BBoxTileHandler.new(tcfg, @logger, cfg["http"])))
+         reg(path, BBoxTileHandler.new(tcfg, @logger, cfg["http"]))
          path = cfg["http"]["base"] + "/ArcGIS/rest/services/" + tcfg["title"] + "/MapServer/"
          @logger.msginfo("Main:Setting up '#{path}''")
          reg(path, ESRIRestTileHandler.new(tcfg, @logger, cfg["http"]))
@@ -72,9 +72,9 @@ class Roundhouse
     def route(stock_url)
       url=stock_url.split(/\/+/).join("/")
       @routes.keys.each do |x|
-        @logger.msginfo("Main:route:Looking at '#{url}' (#{url[0,@routes[x]['path_length']]}) for '#{x}'")
+        #@logger.msginfo("Main:route:Looking at '#{url}' (#{url[0,@routes[x]['path_length']]}) for '#{x}'")
         if (x == url[0,@routes[x]["path_length"]])
-          @logger.msginfo("Main:route: #{@routes[x]["handler"].class.to_s} will do '#{url}'")
+          #@logger.msginfo("Main:route: #{@routes[x]["handler"].class.to_s} will do '#{url}'")
           return @routes[x]["handler"]
         end
       end

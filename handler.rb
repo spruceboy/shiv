@@ -405,7 +405,7 @@ class ESRIRestTileHandler < RackWelder
 	
 	# first check the style of request - if includes json, then probibly a getpoo request..
 	#obvoulsy better checking is in order..
-	if (request.env["PATH_INFO"].include?("json") )
+	if (request.env["REQUEST_URI"].include?("json") )
 	    ##
 	    # Do request..
 	    size = send_file_full("/var/www/html/distro/esri_api_example",request,response, "text/plain")
@@ -431,7 +431,8 @@ class ESRIRestTileHandler < RackWelder
 	# of the form junk/z/y/x.format
 	x = uri.last.split(".").first.to_i
 	y = uri[-2].to_i
-	z = uri[-2].to_i
+	z = uri[-3].to_i
+	y = (2**(z))-y-1   #flip to esri style numbering..
 	puts("URI -> #{request.env["PATH_INFO"]} -> #{x},#{y}, #{z}")
 	
 	
