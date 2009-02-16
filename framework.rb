@@ -38,7 +38,10 @@ class Roundhouse
          reg(path, TileHandler.new(tcfg, @logger, cfg["http"]))
          path = cfg["http"]["base"] + "/" + tcfg["title"] + "/bbox/"
          @logger.msginfo("Main:Setting up '#{path}''")
-         reg(path, BBoxTileHandler.new(tcfg, @logger, cfg["http"]))
+         reg(path, BBoxTileHandler.new(tcfg, @logger, cfg["http"])))
+         path = cfg["http"]["base"] + "/ArcGIS/rest/services/" + tcfg["title"] + "/MapServer/"
+         @logger.msginfo("Main:Setting up '#{path}''")
+         reg(path, ESRIRestTileHandler.new(tcfg, @logger, cfg["http"]))
       end
       reg(cfg["http"]["base"] + "/" + "kml", KMLHandler.new(@logger, cfg["kml"]))
       

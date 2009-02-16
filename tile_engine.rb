@@ -380,7 +380,7 @@ class ExternalTileEngine  < TileEngine
     
     @command_path = File.dirname(__FILE__) + "/tile_grabber.rb"
     
-    @config = ARGV.first ##This sucks sooo bad... Major punt here... Jay sucks..
+    @config = "shiv.op.yml" ##This sucks sooo bad... Major punt here... Jay sucks..
   end
   private
   
@@ -390,7 +390,7 @@ class ExternalTileEngine  < TileEngine
     # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
     return path if ( File.exists?(path))
     command = [@command_path, @config, @cfg["title"], x.to_s, y.to_s, z.to_s]
-    @log.msgdebug(@lt+"running -> #{command.join(" ")}")
+    @log.msginfo(@lt+"running -> #{command.join(" ")}")
     
     @log.msginfo(@lt+"Starting subtiler (#{x},#{y}.#{z})..")
     results = YAML.load(`#{command.join(" ")}`)

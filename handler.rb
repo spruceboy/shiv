@@ -380,6 +380,98 @@ class BBoxTileHandler < RackWelder
     end
    end
 end
+
+
+#########
+# Esri REST style handler..
+class ESRIRestTileHandler < RackWelder
+    def initialize (cfg, log, http_cfg)
+	@logger = log
+	@cfg = cfg
+	@http_cfg = http_cfg
+	@url_root = http_cfg["base"]
+	#@tile_engine =  Imlib2TileEngine.new(cfg, log)
+	@tile_engine =  ExternalTileEngine.new(cfg, log)   #Use the external tile engine..
+	@lt = self.class.to_s + ":"
+	@logger.loginfo(@lt+"Starting")
+    end
+   
+   def process(request, response)
+       
+    begin
+	##
+	# get start time, for tracking purposes..
+	start_tm = Time.now
+	
+	# first check the style of request - if includes json, then probibly a getpoo request..
+	#obvoulsy better checking is in order..
+	if (request.env["PATH_INFO"].include?("json") )
+	    ##
+	    # Do request..
+	    size = send_file_full("/var/www/html/distro/esri_api_example",request,response, "text/plain")
+	    
+	    #Log xfer..
+	    @logger.log_xfer(request,response,size, Time.now-start_tm)
+	    return
+	end
+	mn = "process:"
+	  
+	@logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
+	
+	
+	# Log access...
+	@logger.log_access(request)
+	
+	##
+	#Remove prefix from url..
+	uri = request.env["PATH_INFO"]
+	uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
+	uri = uri.split("/")
+	#url is like http://server.arcgisonline.com/ArcGIS/rest/services/ESRI_StreetMap_World_2D/MapServer/tile/0/0/1
+	# of the form junk/z/y/x.format
+	x = uri.last.split(".").first.to_i
+	y = uri[-2].to_i
+	z = uri[-2].to_i
+	puts("URI -> #{request.env["PATH_INFO"]} -> #{x},#{y}, #{z}")
+	
+	
+	if (z < 0|| y < 0 || z < 0)
+	    @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
+	    give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
+	    return;
+	end
+	
+	##
+	# Uri is good, so do something...
+       
+	path = @tile_engine.get_tile(x,y,z)
+	
+	# Wait for it to show up..
+        @tile_engine.check_and_wait(x,y,z)
+        
+	##
+	# Do request..
+	size = send_file_full(path,request,response)
+	  
+	#Log xfer..
+	@logger.log_xfer(request,response,size, Time.now-start_tm)
+    rescue => excpt
+        ###
+        # Ok, something very bad happend here... what to do..
+        send_file_full(@cfg["error"]["img"],request,response,@cfg["error"]["format"])
+               
+        stuff = "Broken at #{Time.now.to_s}"
+        stuff += "--------------------------\n"
+        stuff += excpt.to_s + "\n"
+        stuff += "--------------------------\n"
+        stuff += excpt.backtrace.join("\n")
+        stuff += "--------------------------\n"
+        stuff += "request => " + YAML.dump(request)+ "\n-------\n"
+        Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "shiv crash..", [stuff])
+        @logger.logerr("Crash in::#{@lt}" + stuff)
+    end
+   end
+end
  
 ###
 # Handler designed to show how fast a mongrel should go, doing only the basic amount of work to dump a file..
