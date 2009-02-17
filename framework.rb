@@ -17,9 +17,11 @@ end
 
 ## Passes requests off to the relevent handlers
 class Roundhouse
-    def initialize(cfg)
+    def initialize(cfg, log_dir=nil)
       @routes = {}
       #get a logger..
+      # log to specified dir
+      cfg["log"]["log_dir"] = log_dir if (log_dir != nil)
       @logger = TileLumber.new(cfg["log"])
       @logger.logstatus("Starting.")
       

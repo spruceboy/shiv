@@ -364,7 +364,7 @@ tile_engines:
     format: png
     img: ./error.png
   title: bdl_esri_test
-  source_url: http://wms.alaskamapped.org//cgi-bin/bdl.cgi?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:102006&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  source_url: http://dib.gina.alaska.edu//cgi-bin/bdl.cgi?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:102006&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
   source_url_old: "http://ak.aoos.org/op/mapserver/ows.php?REQUEST=GetMap&SERVICE=WMS&SRS=EPSG:102006&LAYERS=fnmoc_sst&transparent=true&format=image/png&version=1.1.1&width=%d&height=%d&BBOX=%6.10f,%6.10f,%6.10f,%6.10f&background=0xffffffff&transparent=true"
   tiles:
     y_size: 256
@@ -373,7 +373,7 @@ tile_engines:
     y_count: 5
   temp_area: /tile_temp/
   debug: false
-  storage_format: png
+  storage_format: jpg
   cache_dir: /hub/cache/bdl_esri_test/
   base_extents:
     ymax: 3500000.0
