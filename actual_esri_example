@@ -1,44 +1,16 @@
 {
-  "serviceDescription" : "This service provides land information for Portland, Oregon, including tax lots, buildings, and zoning designations. This service is in the Web Mercator projection (102113) and is cached to the Google Maps and Virtual Earth tiling scheme. Use this service to display tiles on top of Virtual Earth or Google Maps data in a web application.  ", 
-  "mapName" : "Portland", 
-  "description" : "This service provides land information for Portland, Oregon, including tax lots, buildings, and zoning designations. This service is in the Web Mercator projection (102113) and is cached to the Google Maps and Virtual Earth tiling scheme. Use this service to display tiles on top of Virtual Earth or Google Maps data in a web application.  \n", 
-  "copyrightText" : "(c) City of Portland, Oregon: http://www.portlandonline.com/", 
+  "serviceDescription" : "This service provides a example bdl esri rest api interface.  ", 
+  "mapName" : "BDL", 
+  "description" : "Something should go here.  \n", 
+  "copyrightText" : "(c) someone", 
   "layers" : [
     {
       "id" : 0, 
-      "name" : "Tax lots", 
-      "parentLayerId" : -1, 
-      "defaultVisibility" : true, 
-      "subLayerIds" : [1, 2]
-    }, 
-    {
-      "id" : 1, 
-      "name" : "Zoomed in", 
-      "parentLayerId" : 0, 
-      "defaultVisibility" : true, 
-      "subLayerIds" : null
-    }, 
-    {
-      "id" : 2, 
-      "name" : "Zoomed out", 
-      "parentLayerId" : 0, 
-      "defaultVisibility" : true, 
-      "subLayerIds" : null
-    }, 
-    {
-      "id" : 3, 
-      "name" : "Buildings", 
+      "name" : "SDMI BDL", 
       "parentLayerId" : -1, 
       "defaultVisibility" : true, 
       "subLayerIds" : null
-    }, 
-    {
-      "id" : 4, 
-      "name" : "Zoning", 
-      "parentLayerId" : -1, 
-      "defaultVisibility" : true, 
-      "subLayerIds" : null
-    }
+    } 
   ], 
   "spatialReference" : {
     "wkid" : 102006
