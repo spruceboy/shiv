@@ -408,7 +408,7 @@ class ESRIRestTileHandler < RackWelder
 	if (request.env["REQUEST_URI"].include?("json") )
 	    ##
 	    # Do request..
-	    size = send_file_full("/var/www/html/distro/esri_api_example",request,response, "text/plain")
+	    size = send_file_full(@cfg["esri_rest"]["config"],request,response, "text/plain")
 	    
 	    #Log xfer..
 	    @logger.log_xfer(request,response,size, Time.now-start_tm)

@@ -243,7 +243,7 @@ class Imlib2TileEngine  < TileEngine
     @log.msgdebug(@lt+mn + "(#{x},#{y},#{z})")
     
     # Local file to write data too
-    i = Tempfile.new(@cfg["temparea"])
+    i = Tempfile.new(@cfg["temp_area"])
     
     #convert x,y,z to a bounding box
     bbox = x_y_z_to_map_x_y(x,y,z)
@@ -299,7 +299,7 @@ class Imlib2TileEngine  < TileEngine
     end
     
     # Temp file for temp local storage of image..
-    t = Tempfile.new(@cfg["temparea"])
+    t = Tempfile.new(@cfg["temp_area"])
     @log.msgdebug(@lt+mn + "tmpfile => {#{t.path}}")
     
     # x,y,z to bounding box

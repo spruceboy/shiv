@@ -16,7 +16,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/drg_geo/
@@ -44,7 +44,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: jpg
   cache_dir: /hub/cache/bdl_geo/
@@ -72,7 +72,7 @@ tile_engines:
     x_size: 256
     x_count: 8
     y_count: 
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: jpg
   cache_dir: /hub/cache/bdl/
@@ -101,7 +101,7 @@ tile_engines:
     x_count: 3
     y_count: 3
     colors: 255
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/drg/
@@ -130,7 +130,7 @@ tile_engines:
     x_count: 3
     y_count: 3
     colors: 255
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/drg_geo/
@@ -158,7 +158,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/charts/
@@ -186,7 +186,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/charts_geo/
@@ -214,7 +214,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/shaded_relief_ned/
@@ -242,7 +242,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/shaded_relief_ned_geo/
@@ -270,7 +270,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: jpg
   cache_dir: /hub/cache/landsat_pan/
@@ -298,7 +298,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: jpg
   cache_dir: /hub/cache/landsat_pan_geo/
@@ -326,7 +326,7 @@ tile_engines:
     x_size: 256
     x_count: 5
     y_count: 5
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: png
   cache_dir: /hub/cache/google_line_work/
@@ -363,6 +363,8 @@ tile_engines:
   error:
     format: png
     img: ./error.png
+  esri_rest:
+    config: "/var/www/html/distro/esri_api_example"
   title: bdl_esri_test
   source_url: http://dib.gina.alaska.edu//cgi-bin/bdl.cgi?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:102006&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
   source_url_old: "http://ak.aoos.org/op/mapserver/ows.php?REQUEST=GetMap&SERVICE=WMS&SRS=EPSG:102006&LAYERS=fnmoc_sst&transparent=true&format=image/png&version=1.1.1&width=%d&height=%d&BBOX=%6.10f,%6.10f,%6.10f,%6.10f&background=0xffffffff&transparent=true"
@@ -375,6 +377,28 @@ tile_engines:
   debug: false
   storage_format: jpg
   cache_dir: /hub/cache/bdl_esri_test/
+  base_extents:
+    ymax: 3500000.0
+    xmax: 3500000.0
+    ymin: -3500000.0
+    xmin: -3500000.0
+- mailer_config: *id001
+  error:
+    format: png
+    img: ./error.png
+  esri_rest:
+    config: "/var/www/html/distro/esri_api_example2"
+  title: drg_esri_test
+  source_url: http://dib.gina.alaska.edu//cgi-bin/bdl_extras.cgi?layers=drg&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:102006&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  tiles:
+    y_size: 512
+    x_size: 512
+    x_count: 3
+    y_count: 3
+  temp_area: /tile_temp/
+  debug: false
+  storage_format: png
+  cache_dir: /hub/cache/drg_esri_test/
   base_extents:
     ymax: 3500000.0
     xmax: 3500000.0
@@ -415,7 +439,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: jpg
   cache_dir: /hub/cache/aoos_bath_geo/
@@ -443,7 +467,7 @@ tile_engines:
     x_size: 256
     x_count: 3
     y_count: 3
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: true
   storage_format: png
   cache_dir: /hub/cache/aoos_bath/
@@ -476,7 +500,7 @@ tile_engines:
     x_size: 256
     x_count: 4
     y_count: 4
-  temp_area: /tmp/tile_temp/
+  temp_area: /tile_temp/
   debug: false
   storage_format: jpg
   cache_dir: /hub/cache/spot_ir_geo/

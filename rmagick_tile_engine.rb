@@ -155,7 +155,7 @@ class RmagickTileEngine  < TileEngine
       end
       
       # Local file to write data too
-      i = Tempfile.new(@cfg["temparea"])
+      i = Tempfile.new(@cfg["temp_area"])
       
       #convert x,y,z to a bounding box
       bbox = x_y_z_to_map_x_y(x,y,z)
@@ -219,7 +219,7 @@ class RmagickTileEngine  < TileEngine
       end
       
       # Temp file for temp local storage of image..
-      t = Tempfile.new(@cfg["temparea"])
+      t = Tempfile.new(@cfg["temp_area"])
       @log.msgdebug(@lt+mn + "tmpfile => {#{t.path}}")
       
       # x,y,z to bounding box
