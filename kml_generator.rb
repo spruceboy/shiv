@@ -21,19 +21,28 @@ class KMLHandler < RackWelder
   def process(request, response)
     begin
       @logger.puts("KML -> #{request.params[@REMOTE_IP_TAG]} -> #{request.params["REQUEST_URI"]}")
-      response.start(200) do |head,out|
-        head["Content-Type"] = "application/vnd.google-earth.kml+xml"
-        
-        uri = request.params["REQUEST_URI"]
-        give404(response, "Try a real url, thats not nil.") if ( uri == nil)
+     
+      uri = request.env["PATH_INFO"]
+      if ( uri == nil)
+        give404(response, "Try a real url, thats not nil.")
+        return
+      else
         uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
+        puts uri
         
         # uri once cleaned up, shoudl not be empty..
-        give404(response, "Try a real url, perhaps one that is valid.") if ( uri == "")
+        if ( uri == "")
+          give404(response, "Try a real url, perhaps one that is valid.")
+          return
+        end
         
         #uri should be for the form /set/lt_x/tl_y/br_x/br_y
         uri = uri.split("/")
-        give404(response, "Try a real url, perhaps one that is valid.") if ( uri.length != 5 )
+        
+        if ( uri.length != 5 )
+          give404(response, "Try a real url, perhaps one that is valid and of the form /set/lt_x/tl_y/br_x/br_y") if ( uri.length != 5 )
+          return
+        end
         
         set = uri[0]
         tl_x = uri[1].to_f
@@ -43,6 +52,7 @@ class KMLHandler < RackWelder
         
         ##
         # This is the case if things are really broken - possibly not possible now..
+        # Not sure if the behavior is good, or bad -  should possibly just generate an error now..
         if ( br_x == nil || br_y == nil || tl_x == nil|| tl_y == nil||set==nil)
             br_x = "180.0"
             br_y = "-90"
@@ -51,12 +61,11 @@ class KMLHandler < RackWelder
             set = "bdl"
         end
         
+        response.status = 200
+        response.header["Content-Type"] = "application/vnd.google-earth.kml+xml"
         @logger.msgdebug("KMLHandler:process:"+ sprintf("(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f))
-        #STDERR.printf("(%g,%g) -> (%g,%g)\n", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f)
-      
-        #cfg = YAML.load(File.open("/www/wms/apps/kml/kml.yml"))
         stuff = do_level(@cfg["sets"][set],set,tl_x.to_f, tl_y.to_f, br_x.to_f, br_y.to_f)
-        out.write(stuff)
+        response.write(stuff)
       end
     rescue => excpt
       ###

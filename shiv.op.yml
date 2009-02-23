@@ -14,8 +14,9 @@ tile_engines:
   tiles: 
     y_size: 256
     x_size: 256
-    x_count: 3
-    y_count: 3
+    x_count: 2
+    y_count: 2
+    colors: 64
   temp_area: /tile_temp/
   debug: false
   storage_format: png
