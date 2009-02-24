@@ -165,9 +165,8 @@ class RmagickTileEngine  < TileEngine
       
       #get the raw image data..
       @log.loginfo(@lt+mn + "(#{url})")
-      @downloader.easy_download(url, i.path)
-      @log.loginfo(@lt+mn + "(got url) ")
-      im = Magick::Image::read(i.path).first
+      #@downloader.easy_download(url, i.path)
+      im = Magick::Image::from_blob(@downloader.easy_body(url)).first
       
       
       if ( !im )
@@ -233,8 +232,10 @@ class RmagickTileEngine  < TileEngine
       
       # Download the image to a local copy..
       @log.msgdebug(@lt+mn + "url => {#{url}}")
-      @downloader.easy_download(url, t.path)
-      im = Magick::Image::read(t.path).first
+      
+      #Download to tmp file..
+      #@downloader.easy_download(url, t.path)
+      im = Magick::Image::from_blob(@downloader.easy_body(url)).first
       
       if ( !im )
         raise "No img returned for #{url} -> something serously wrong."

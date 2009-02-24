@@ -511,9 +511,13 @@ class TileLockerFile
   def locked(x,y,z)
     @m_lock.synchronize do
       path = getpath(x,y,z)
-      if ( File.exists?(path) && ((Time.now - File.mtime(path)) > WAIT_TIME) )
-        @log.msgerror(@lt +"Lock timeout on #{x},#{y},#{z}  ")
-        File.delete(path)
+      begin
+        if ( File.exists?(path) && ((Time.now - File.mtime(path)) > WAIT_TIME) )
+          @log.msgerror(@lt +"Lock timeout on #{x},#{y},#{z}  ")
+          File.delete(path)
+        end
+      rescue
+        # Do nothing - means file is gone.
       end
       
       # Normal path
@@ -529,4 +533,6 @@ class TileLockerFile
 end
 
 
+
 require "rmagick_tile_engine"
+require "idler"
