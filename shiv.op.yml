@@ -14,9 +14,9 @@ tile_engines:
   tiles: 
     y_size: 256
     x_size: 256
-    x_count: 2
-    y_count: 2
-    colors: 64
+    x_count: 4
+    y_count: 4
+    colors: 128
   temp_area: /tile_temp/
   debug: false
   storage_format: png
@@ -72,7 +72,7 @@ tile_engines:
     y_size: 256
     x_size: 256
     x_count: 8
-    y_count: 
+    y_count: 8
   temp_area: /tile_temp/
   debug: false
   storage_format: jpg
@@ -389,6 +389,8 @@ tile_engines:
     img: ./error.png
   esri_rest:
     config: "/var/www/html/distro/esri_api_example2"
+    description: "This is a test service providing the 63k series DRGs"
+    projection: 102006
   title: drg_esri_test
   source_url: http://dib.gina.alaska.edu//cgi-bin/bdl_extras.cgi?layers=drg&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:102006&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
   tiles:
@@ -396,6 +398,7 @@ tile_engines:
     x_size: 512
     x_count: 3
     y_count: 3
+    colors: 60
   temp_area: /tile_temp/
   debug: false
   storage_format: png
@@ -405,6 +408,9 @@ tile_engines:
     xmax: 3500000.0
     ymin: -3500000.0
     xmin: -3500000.0
+  esri_rest:
+    description: "This is a test service providing the BDL"
+    projection: 102006
 - mailer_config: *id001
   error:
     format: png
@@ -521,41 +527,41 @@ kml:
   mailer_config: *id001
   sets:
     bdl:
-      source: "http://swmha.gina.alaska.edu/tilesrv/bdl_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
+      source: "http://failboat.gina.alaska.edu/tilesrv/bdl_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
       tl:
         x: -180
         y: 90
       br:
         x: 180
         y: -90
-      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+      url: "http://failboat.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
     drg:
-      source: "http://hippy.gina.alaska.edu/tilesrv/drg_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
+      source: "http://failboat.gina.alaska.edu/tilesrv/drg_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
       tl:
         x: -180
         y: 90
       br:
         x: 180
         y: -90
-      url: "http://hippy.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+      url: "http://failboat.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
     aoos_bath:
-      source: "http://swmha.gina.alaska.edu/tilesrv/aoos_bath/bbox/%.20f/%.20f/%.20f/%.20f/"
+      source: "http://failboat.gina.alaska.edu/tilesrv/aoos_bath/bbox/%.20f/%.20f/%.20f/%.20f/"
       tl:
         x: -180
         y: 90
       br:
         x: 180
         y: -90
-      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+      url: "http://failboat.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
     spot_ir:
-      source: "http://swmha.gina.alaska.edu/tilesrv/spot_ir/bbox/%.20f/%.20f/%.20f/%.20f/"
+      source: "http://failboat.gina.alaska.edu/tilesrv/spot_ir/bbox/%.20f/%.20f/%.20f/%.20f/"
       tl:
         x: -180
         y: 90
       br:
         x: 180
         y: -90 
-      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+      url: "http://failboat.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
 http: 
   port: 3333
   bind: 0.0.0.0
