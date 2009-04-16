@@ -507,7 +507,7 @@ kml:
         x: 180
         y: -90 
       url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
-    charts
+    charts:
       source: "http://swmha.gina.alaska.edu/tilesrv/charts_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
       tl:
         x: -180
