@@ -71,8 +71,8 @@ tile_engines:
   tiles: 
     y_size: 256
     x_size: 256
-    x_count: 3
-    y_count: 3
+    x_count: 5
+    y_count: 5
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
