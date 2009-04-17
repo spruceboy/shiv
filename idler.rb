@@ -23,6 +23,7 @@ class Idler
             if (item)
               puts("#{self.class.to_s}: doing #{item["x"]}, #{item["y"]}, #{item["z"]}")
               item["engine"].make_tiles(item["x"], item["y"], item["z"])
+              sleep(0.5)
             else
               puts("#{self.class.to_s}: Sleeping, nothing to do.")
               sleep(10)
