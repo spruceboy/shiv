@@ -151,7 +151,7 @@ class ExternalTileEngine  < TileEngine
     
     @config = "shiv.op.yml" ##This sucks sooo bad... Major punt here... Jay sucks..
     
-    @@idler = Idler.new(2) if ( ! @@idler )   #Only create an idler if a instance is instaicated. My spelling sucks.  So does my coding.
+    @@idler = Idler.new(1) if ( ! @@idler )   #Only create an idler if a instance is instaicated. My spelling sucks.  So does my coding.
   end
   
   
