@@ -7,13 +7,13 @@
 
 require "rubygems"
 require "GD"
-require "imlib2"
 require "tempfile"
 require "thread"
 require "http_client_tools"
 
 
 class HeatMapper
+    require "imlib2"
     ##
     # cfg is the config hash, logger is the handle to the logger item..
     def initialize ( cfg, logger)

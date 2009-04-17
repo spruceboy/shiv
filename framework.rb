@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 
+require "shiv_includes"
+require "pp"
+
+
 
 ########################
 # Very small framework for shiv, only
