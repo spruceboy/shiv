@@ -188,7 +188,7 @@ class ExternalTileEngine  < TileEngine
     
     ##
     # Queue up everything around the request, to get maximise data generation. 
-    (-1).upto(1) {|dx| (-1).upto(1) {|dy| @@idler.add(self, x+dx*@cfg["tiles"]["x_count"],y+dy*@cfg["tiles"]["y_count"],z) if (dy != 0 && dx != 0) }}
+    (-1).upto(1) {|dx| (-1).upto(1) {|dy| @@idler.add(self, x+dx*@cfg["tiles"]["x_count"],y+dy*@cfg["tiles"]["y_count"],z) if (!(dy == 0 && dx == 0)) }}
     
     make_tiles(x,y,z)
     
