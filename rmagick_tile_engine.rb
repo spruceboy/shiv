@@ -236,6 +236,7 @@ class RmagickTileEngine  < TileEngine
       #Download to tmp file..
       #@downloader.easy_download(url, t.path)
       im = Magick::Image::from_blob(@downloader.easy_body(url)).first
+      im = draw_text(im, @label_font, @cfg["label"]["text"],5+rand(im.columns/2.0),5+rand(im.rows-30),@label_color,@label_blend) if (@label_color)
       
       if ( !im )
         raise "No img returned for #{url} -> something serously wrong."
@@ -251,7 +252,7 @@ class RmagickTileEngine  < TileEngine
           @log.msgdebug(@lt+mn + ":cutting (#{i*@x_size}, #{j*@y_size})")
           if (!File.exists?(path) || true)
             tile = im.crop(i*@x_size,(@y_count - j - 1)*@y_size, @x_size,@y_size)
-            tile = draw_text(tile, @label_font, @cfg["label"]["text"],5+rand(tile.columns/2.0),5+rand(tile.rows-30),@label_color,@label_blend) if (@label_color)
+            #tile = draw_text(tile, @label_font, @cfg["label"]["text"],5+rand(tile.columns/2.0),5+rand(tile.rows-30),@label_color,@label_blend) if (@label_color)
             tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
             if ( @watermark)
               tile = watermark(tile)

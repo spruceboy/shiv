@@ -62,11 +62,11 @@ class RackWelder
          # test to see if this is a conditional request, and test if
 	 # the response would be identical to the last response
          same_response = case
-                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil : false
-                      when modified_since && last_response_time > Time.now                                  : false
-                      when modified_since && mtime > last_response_time                                     : false
-                      when none_match     && none_match == '*'                                              : false
-                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              : false
+                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil then false
+                      when modified_since && last_response_time > Time.now                                  then false
+                      when modified_since && mtime > last_response_time                                     then false
+                      when none_match     && none_match == '*'                                              then false
+                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              then false
                       else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
                       end
 
@@ -130,11 +130,11 @@ class RackWelder
 	 # the response would be identical to the last response
 	 # Not sure whats going on here - stole from mongrels dir handler, which probibly does everything correctly..
         same_response = case
-                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil : false
-                      when modified_since && last_response_time > Time.now                                  : false
-                      when modified_since && mtime > last_response_time                                     : false
-                      when none_match     && none_match == '*'                                              : false
-                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              : false
+                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil then false
+                      when modified_since && last_response_time > Time.now                                  then false
+                      when modified_since && mtime > last_response_time                                     then false
+                      when none_match     && none_match == '*'                                              then false
+                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              then false
                       else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
                       end
 
@@ -385,6 +385,7 @@ end
 #########
 # Esri REST style handler..
 class ESRIRestTileHandler < RackWelder
+    require "json"
     def initialize (cfg, log, http_cfg)
 	@logger = log
 	@cfg = cfg
@@ -408,10 +409,7 @@ class ESRIRestTileHandler < RackWelder
 	if (request.env["REQUEST_URI"].include?("json") )
 	    ##
 	    # Do request..
-	    size = send_file_full(@cfg["esri_rest"]["config"],request,response, "text/plain")
-	    
-	    #Log xfer..
-	    @logger.log_xfer(request,response,size, Time.now-start_tm)
+	    give_X(response, 200, "text/plain", get_poo().to_json)
 	    return
 	end
 	mn = "process:"
@@ -472,6 +470,96 @@ class ESRIRestTileHandler < RackWelder
         @logger.logerr("Crash in::#{@lt}" + stuff)
     end
    end
+   
+   
+   private
+   
+    ###
+    # Not sure what ersi calls the Mapserver/json requests, so I call it the "get_poo" request..
+    # Anyway, this generates that information as a hash
+   def get_poo()
+       
+    hsh_template = {"spatialReference"=>{"wkid"=>666},
+	"mapName"=>"not known",
+	"serviceDescription"=>
+	    "Not known.",
+	"singleFusedMapCache"=>true,
+	"layers"=>
+	 [{"subLayerIds"=>nil,
+	   "name"=>"Not known.",
+	   "parentLayerId"=>-1,
+	   "id"=>0,
+	   "defaultVisibility"=>true}],
+	"copyrightText"=>"(c) someone",
+	"fullExtent"=>
+	 {"spatialReference"=>{"wkid"=>10},
+	  "ymax"=>0.0,
+	  "xmax"=>0.0,
+	  "ymin"=>-10.0,
+	  "xmin"=>-3.0},
+	"units"=>"esriMeters",
+	"tileInfo"=>
+	 {"lods"=> [],
+	  "spatialReference"=>{"wkid"=>102006},
+	  "format"=>"PNG",
+	  "compressionQuality"=>0,
+	  "origin"=>{"x"=>-0.0, "y"=>0.0},
+	  "dpi"=>96,
+	  "rows"=>512,
+	  "cols"=>512},
+	"description"=>"Something should go here.  \n",
+	"initialExtent"=>
+	 {"spatialReference"=>{"wkid"=>10101},
+	  "ymax"=>0.0,
+	  "xmax"=>0.0,
+	  "ymin"=>-10.0,
+	  "xmin"=>-30.0},
+	"documentInfo"=>
+	 {"Category"=>"shiv",
+	  "Subject"=>"shiv",
+	  "Keywords"=>"shiv",
+	  "Author"=>"shiv",
+	  "Title"=>"",
+	  "Comments"=>"shiv auto generated rest responce"}}
+
+
+	#build resolutions
+	#basic idea => res_multiplyer = extents/pixels
+	extent_width = @cfg["base_extents"]["xmax"] - @cfg["base_extents"]["xmin"]
+	tile_width = @cfg["tiles"]["x_size"]
+	scale_magic_factor = (51673124.9999999/13671.875) #meters to whatever..
+	0.upto(20) do |i|
+	    res = extent_width/((2**i)*tile_width)
+	    hsh_template["tileInfo"]["lods"] << { "resolution" => res, "scale" => res*scale_magic_factor, "level" => i}
+	end
+	
+	#Set extents..
+	hsh_template["initialExtent"]["spatialReference"]={"wkid"=>(@cfg["esri_rest"]["projection"]).to_i}
+	hsh_template["initialExtent"]["xmin"] = @cfg["base_extents"]["xmin"]
+	hsh_template["initialExtent"]["ymin"] = @cfg["base_extents"]["ymin"]
+	hsh_template["initialExtent"]["xmax"] = @cfg["base_extents"]["xmax"]
+	hsh_template["initialExtent"]["ymax"] = @cfg["base_extents"]["ymax"]
+	
+	hsh_template["fullExtent"] = hsh_template["initialExtent"].dup
+	hsh_template["serviceDescription"]=
+	hsh_template["spatialReference"] ={"wkid"=>(@cfg["esri_rest"]["projection"]).to_i}
+	hsh_template["tileInfo"]["spatialReference"]={"wkid"=>(@cfg["esri_rest"]["projection"]).to_i}
+	
+	#Translate format types to esri like wonder wigets..
+	hsh_template["tileInfo"]["format"]= case @cfg["storage_format"] when "png": "PNG" when "jpg": "JPEG" else "PNG" end
+	
+	#Translate compression values to something useful, though not sure what they are acutally used for... mystery magic i expect.
+	hsh_template["tileInfo"]["compressionQuality"]= case @cfg["storage_format"] when "png": 0 when "jpg": 70 else 0 end
+	
+	#fill out random other fields.. fun, fun,fun.
+	hsh_template["tileInfo"]["origin"]={"x"=>@cfg["base_extents"]["xmin"], "y"=> @cfg["base_extents"]["ymax"]}
+	hsh_template["tileInfo"]["rows"]=@cfg["tiles"]["x_size"]
+	hsh_template["tileInfo"]["cols"]=@cfg["tiles"]["y_size"]
+	hsh_template["serviceDescription"] = @cfg["esri_rest"]["description"]
+	hsh_template["mapName"] = @cfg["title"]
+	hsh_template["layers"][0]["name"] = @cfg["title"]
+	return hsh_template
+  end
 end
  
 ###

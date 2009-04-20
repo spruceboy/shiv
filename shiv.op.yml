@@ -67,12 +67,12 @@ tile_engines:
     format: png
     img: /hub/cache/production/images/error.png
   title: bdl
-  source_url: http://wms.alaskamapped.org//cgi-bin/bdl_google.cgi?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/jpeg&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+  source_url: http://wms.alaskamapped.org/bdl?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/jpeg&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
   tiles: 
     y_size: 256
     x_size: 256
-    x_count: 3
-    y_count: 3
+    x_count: 5
+    y_count: 5
   temp_area: /tmp/tile_temp/
   debug: false
   storage_format: jpg
