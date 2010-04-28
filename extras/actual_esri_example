@@ -1,0 +1,82 @@
+{
+  "serviceDescription" : "This service provides a example bdl esri rest api interface.  ", 
+  "mapName" : "BDL", 
+  "description" : "Something should go here.  \n", 
+  "copyrightText" : "(c) someone", 
+  "layers" : [
+    {
+      "id" : 0, 
+      "name" : "SDMI BDL", 
+      "parentLayerId" : -1, 
+      "defaultVisibility" : true, 
+      "subLayerIds" : null
+    } 
+  ], 
+  "spatialReference" : {
+    "wkid" : 102006
+  }, 
+  "singleFusedMapCache" : true, 
+  "tileInfo" : {
+    "rows" : 256, 
+    "cols" : 256, 
+    "dpi" : 96, 
+    "format" : "JPEG", 
+    "compressionQuality" : 75, 
+    "origin" : {
+      "x" : -3500000.00, 
+      "y" :  3500000.00
+    }, 
+    "spatialReference" : {
+      "wkid" : 102006
+    }, 
+    "lods" : [
+      {"level" : 0, "resolution" : 27343.75, "scale" : 103346250.0},
+      {"level" : 1, "resolution" : 13671.875, "scale" :  51673124.9999999},
+      {"level" : 2, "resolution" : 6835.9375, "scale" : 25836562.4999999},
+      {"level" : 3, "resolution" : 3417.96875, "scale" : 12918281.25},
+      {"level" : 4, "resolution" : 1708.984375, "scale" : 6459140.62499998},
+      {"level" : 5, "resolution" : 854.4921875, "scale" : 3229570.31249999},
+      {"level" : 6, "resolution" : 427.24609375, "scale" : 1614785.15625},
+      {"level" : 7, "resolution" : 213.623046875, "scale" : 807392.578124998},
+      {"level" : 8, "resolution" : 106.8115234375, "scale" : 403696.28906},
+      {"level" : 9, "resolution" : 53.40576171875, "scale" : 201848.144531249},
+      {"level" : 10, "resolution" : 26.702880859375, "scale" : 100924.072265625},
+      {"level" : 11, "resolution" : 13.3514404296875, "scale" : 50462.0361328124},
+      {"level" : 12, "resolution" : 6.67572021484375, "scale" : 25231.0180664062},
+      {"level" : 13, "resolution" : 3.33786010742188, "scale" : 12615.5090332031},
+      {"level" : 14, "resolution" : 1.66893005371094, "scale" : 6307.75451660155},
+      {"level" : 15, "resolution" : 0.834465026855469, "scale" : 3153.87725830077},
+      {"level" : 16, "resolution" : 0.417232513427734, "scale" : 1576.9386291503},
+      {"level" : 17, "resolution" : 0.208616256713867, "scale" : 788.46931457515}, 
+      {"level" : 18, "resolution" : 0.104308128356933, "scale" : 394.234657287575}, 
+      {"level" : 19, "resolution" : 0.0521540641784667, "scale" : 197.117328643787}
+    ]
+  }, 
+  "initialExtent" : {
+    "xmin" : -3500000.000, 
+    "ymin" : -3500000.000, 
+    "xmax" : 3500000.000, 
+    "ymax" : 3500000.000, 
+    "spatialReference" : {
+      "wkid" : 102006
+    }
+  }, 
+  "fullExtent" : {
+    "xmin" : -3500000.000,     
+    "ymin" : -3500000.000,    
+    "xmax" : 3500000.000,      
+    "ymax" : 3500000.000,    
+    "spatialReference" : {
+      "wkid" : 102006
+    }
+  }, 
+  "units" : "esriMeters", 
+  "documentInfo" : {
+    "Title" : "Zoning", 
+    "Author" : "ster4624", 
+    "Comments" : "", 
+    "Subject" : "", 
+    "Category" : "", 
+    "Keywords" : ""
+  }
+}
