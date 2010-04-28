@@ -546,10 +546,22 @@ class ESRIRestTileHandler < RackWelder
 	hsh_template["tileInfo"]["spatialReference"]={"wkid"=>(@cfg["esri_rest"]["projection"]).to_i}
 	
 	#Translate format types to esri like wonder wigets..
-	hsh_template["tileInfo"]["format"]= case @cfg["storage_format"] when "png": "PNG" when "jpg": "JPEG" else "PNG" end
+	hsh_template["tileInfo"]["format"]= case @cfg["storage_format"]
+	    when "png"
+		 "PNG"
+	    when "jpg"
+		"JPEG"
+	    else "PNG"
+	end
 	
 	#Translate compression values to something useful, though not sure what they are acutally used for... mystery magic i expect.
-	hsh_template["tileInfo"]["compressionQuality"]= case @cfg["storage_format"] when "png": 0 when "jpg": 70 else 0 end
+	hsh_template["tileInfo"]["compressionQuality"]= case @cfg["storage_format"]
+	    when "png"
+		0
+	    when "jpg"
+		70
+	    else 0
+	end
 	
 	#fill out random other fields.. fun, fun,fun.
 	hsh_template["tileInfo"]["origin"]={"x"=>@cfg["base_extents"]["xmin"], "y"=> @cfg["base_extents"]["ymax"]}

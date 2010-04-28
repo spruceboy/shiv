@@ -7,12 +7,21 @@ require 'yaml'
 
 
 
+##
+# Serves up kml..
 class KMLHandler < RackWelder
   
+  #set stuff up, log=logger, cfg=shiv kml config.
   def initialize ( log,cfg)
     @logger = log
+    
+    #the ip of the requesting host..
     @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
+    
+    #save the config..
     @cfg = cfg
+    
+    #save the root url.
     @url_root = @cfg["root_url"]
   end
   

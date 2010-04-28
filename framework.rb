@@ -22,6 +22,13 @@ end
 ## Passes requests off to the relevent handlers
 class Roundhouse
     def initialize(cfg )
+      load(cfg)
+    end
+    
+    ##
+    # Loads/reloads a config set..
+    def load(cfg)
+      @cfg = cfg
       @routes = {}
       #get a logger..
       # log to specified dir
@@ -31,13 +38,8 @@ class Roundhouse
       #mount up the /benchmark area..
       reg( cfg["http"]["base"] + "/benchmark", BenchmarkHandler.new(@logger))
       
-      #mount up the /exit area..
-      # Decide what to do here..
-      #reg( cfg["http"]["base"] + "/magic/exit", ExitHandler.new(logger))
-      
-      
       #loop though the tile engines in the config file, and fire up and mount each..
-      cfg["tile_engines"].each do |tcfg|
+      configs(cfg) do |tcfg|
          path = cfg["http"]["base"] + "/" + tcfg["title"] + "/tile/"
          @logger.msginfo("Main:Setting up '#{path}''")
          reg(path, TileHandler.new(tcfg, @logger, cfg["http"]))
@@ -48,6 +50,9 @@ class Roundhouse
          @logger.msginfo("Main:Setting up '#{path}''")
          reg(path, ESRIRestTileHandler.new(tcfg, @logger, cfg["http"]))
       end
+      
+      ##
+      # Kml serving gadget..
       reg(cfg["http"]["base"] + "/" + "kml", KMLHandler.new(@logger, cfg["kml"]))
       
       @logger.logstatus("Up.")
@@ -68,12 +73,16 @@ class Roundhouse
     
     private
     
+    ##
+    # have stock_url be handled by handler
     def reg(stock_url, handler)
       url=stock_url.split(/\/+/).join("/")
       @logger.msginfo("Mounting up #{url} with #{handler.class.to_s}")
       @routes[url] = {"handler"=>handler,"path_length" => url.length}
     end
     
+    ##
+    # Takes a url and has it handed by the reg(istered) handler.
     def route(stock_url)
       url=stock_url.split(/\/+/).join("/")
       @routes.keys.each do |x|
@@ -86,5 +95,15 @@ class Roundhouse
       return nil   #Bad, nothing matched
     end
     
+    ##
+    # Loops though config dir, setting up each config..
+    def configs(cfg)
+       Dir.glob(cfg["tile_engines"]["conf_dir"] + "/*.conf.yml").each do |item|
+	 engine_cfg = File.open(item){|fd| YAML.load(fd)}
+	 engine_cfg["mailer_config"] = cfg["tile_engines"]["mailer_config"]
+	 engine_cfg["config_path"]=item
+	 yield engine_cfg
+       end
+    end
+    
 end
-

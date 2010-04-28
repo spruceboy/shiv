@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
-
 require "rubygems"
-
 ###
 #  http client tools
 #  Url/fetching/curl like stuff
@@ -13,7 +11,8 @@ class HttpClient
     # Stub for future use...
 end
 
-
+##
+# Openuri/wget combo version
 class SimpleHttpClient < HttpClient
     require "open-uri"
     def easy_download ( url, path )
@@ -28,6 +27,8 @@ class SimpleHttpClient < HttpClient
 end
 
 
+###
+# Curl based version
 class SimpleCurlHttpClient < HttpClient
     require "curb"
     def easy_download ( url, path )
@@ -41,7 +42,8 @@ class SimpleCurlHttpClient < HttpClient
     end
 end
 
-
+##
+# Curb based version
 class SimpleCurbHttpClient < HttpClient
     def easy_download ( url, path )
         Curl::Easy.download(url, path)
