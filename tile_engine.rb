@@ -174,7 +174,7 @@ class ExternalTileEngine  < TileEngine
     if (results["error"])
       raise "external tiler error, reason -> #{results["reason"]}"
     end
-    return get_path(x,y,z)
+    return path
   end
   
   private

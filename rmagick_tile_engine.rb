@@ -165,13 +165,12 @@ class RmagickTileEngine  < TileEngine
       
       #get the raw image data..
       @log.loginfo(@lt+mn + "(#{url})")
-      #@downloader.easy_download(url, i.path)
+      
+      #fetch and load the image
       im = Magick::Image::from_blob(@downloader.easy_body(url)).first
       
-      
-      if ( !im )
-        raise "No img returned for #{url} -> something serously wrong."
-      end
+      #Is the image returned good?
+      raise("No img returned for #{url} -> something serously wrong.") if ( !im )
       
       #if debug, draw some info into the tiles themselves..
       im = draw_text(im,
@@ -239,7 +238,7 @@ class RmagickTileEngine  < TileEngine
       im = draw_text(im, @label_font, @cfg["label"]["text"],5+rand(im.columns/2.0),5+rand(im.rows-30),@label_color,@label_blend) if (@label_color)
       
       if ( !im )
-        raise "No img returned for #{url} -> something serously wrong."
+        raise "No img returned for #{url} -> something serously wrong. Mostly likely the image fetched is not a image (broken server)."
       end
       
       im = color_reduce(im) if (@num_colors)
@@ -252,11 +251,8 @@ class RmagickTileEngine  < TileEngine
           @log.msgdebug(@lt+mn + ":cutting (#{i*@x_size}, #{j*@y_size})")
           if (!File.exists?(path) || true)
             tile = im.crop(i*@x_size,(@y_count - j - 1)*@y_size, @x_size,@y_size)
-            #tile = draw_text(tile, @label_font, @cfg["label"]["text"],5+rand(tile.columns/2.0),5+rand(tile.rows-30),@label_color,@label_blend) if (@label_color)
             tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
-            if ( @watermark)
-              tile = watermark(tile)
-            end
+            tile = watermark(tile) if (@watermark)
             tile.write(path)
             tile.destroy!
           else
