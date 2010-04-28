@@ -1,0 +1,68 @@
+--- 
+tile_engines:
+  conf_dir: "./conf.d/"
+  mailer_config: 
+    from: cable@alaska.edu
+    to: cable@alaska.edu
+    setup:
+      :domain: gina.alaska.edu
+      :address: dino.gi.alaska.edu
+log: 
+  info: true
+  verbose: true
+  debug: false
+  quiet: false
+  logdir: "./logs/"
+kml:
+  root_url: "/tilesrv/kml/"
+  mailer_config: *id001
+  sets:
+    bdl:
+      source: "http://swmha.gina.alaska.edu/tilesrv/bdl_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
+      tl:
+        x: -180
+        y: 90
+      br:
+        x: 180
+        y: -90
+      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+    drg:
+      source: "http://swmha.gina.alaska.edu/tilesrv/drg_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
+      tl:
+        x: -180
+        y: 90
+      br:
+        x: 180
+        y: -90
+      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+    aoos_bath:
+      source: "http://swmha.gina.alaska.edu/tilesrv/aoos_bath/bbox/%.20f/%.20f/%.20f/%.20f/"
+      tl:
+        x: -180
+        y: 90
+      br:
+        x: 180
+        y: -90
+      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+    spot_ir:
+      source: "http://swmha.gina.alaska.edu/tilesrv/spot_ir/bbox/%.20f/%.20f/%.20f/%.20f/"
+      tl:
+        x: -180
+        y: 90
+      br:
+        x: 180
+        y: -90 
+      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+    charts:
+      source: "http://swmha.gina.alaska.edu/tilesrv/charts_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
+      tl:
+        x: -180
+        y: 90
+      br:
+        x: 180
+        y: -90 
+      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f" 
+      
+http: 
+  bind: 0.0.0.0
+  base: /tilesrv
