@@ -2,3 +2,10 @@ logs
 conf.d
 shiv.op.yml
 shiv.yml
+cache
+external_tiler
+tile_temp
+locks
+locks/*
+cache/*
+start.bash
