@@ -5,9 +5,6 @@ require "tempfile"
 require "thread"
 require "http_client_tools"
 
-
-
-
 ###
 # Notes
 #                     **** tile Layout ****************
@@ -36,6 +33,18 @@ class TileEngine
     @log = logger
     @storage_format = cfg["storage_format"]
     @requests = {}
+    
+    # Save some stuff for easy (shorter typing) access later..
+    @x_size = cfg["tiles"]["x_size"]
+    @y_size = cfg["tiles"]["y_size"]
+    @x_count = cfg["tiles"]["x_count"]
+    @y_count = cfg["tiles"]["y_count"]
+    @num_colors =  cfg["tiles"]["colors"] - 4 if ( cfg["tiles"]["colors"] )
+    
+    #to Debug or not to Debug
+    # debug flag
+    @tile_debug = cfg["debug"] if (cfg["debug"])
+    
   end
   
   
@@ -132,6 +141,35 @@ class TileEngine
       "y_max" => @cfg["base_extents"]["ymin"] + (y+1)*w_y}
   end
   
+  #does a block w/upper left and path - used to loop though tiles for cutting them up..
+  def each_tile_ul(x,y)
+    0.upto(@x_count-1) do |i|
+      0.upto(@y_count-1) do |j|
+        mk_path(i+x,j+y,z)
+        path = get_path(x+i,y+j,z)
+        yield( i*@x_size, (@y_count - j - 1)*@y_size, path)
+      end
+    end
+  end
+    
+  #shifts x + y to align with grid..
+  def shift_x_y(x,y)
+    x = (x / @x_count)*@x_count
+    y = (y / @y_count)*@y_count
+    return x,y
+  end
+  
+  #get url - returns the url for a bounding box
+  def get_url_for_x_y_z(x,y,z)
+      # x,y,z to bounding box
+      bbox = x_y_z_to_map_x_y(x,y,z)
+      
+      # bounding box of end tile set 
+      bbox_big = x_y_z_to_map_x_y(x+@x_count-1,y+@y_count-1,z)
+      
+      #Format the url..
+      sprintf(@cfg["source_url"], @x_size*@x_count , @y_size*@y_count, bbox["x_min"],bbox["y_min"], bbox_big["x_max"], bbox_big["y_max"] )
+  end
 end
 
 ####
@@ -147,9 +185,7 @@ class ExternalTileEngine  < TileEngine
     super(cfg,logger)
     @lt = "ExternalTileEngine"
     
-    @command_path = File.dirname(__FILE__) + "/tile_grabber.rb"
-    
-    @config = "shiv.op.yml" ##This sucks sooo bad... Major punt here... Jay sucks..
+    @command_path = File.dirname(__FILE__) + "/external_tiler"
     
     @@idler = Idler.new(1) if ( ! @@idler )   #Only create an idler if a instance is instaicated. My spelling sucks.  So does my coding.
   end
@@ -160,7 +196,7 @@ class ExternalTileEngine  < TileEngine
     # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
     return path if ( File.exists?(path))
     
-    command = [@command_path, @config, @cfg["title"], x.to_s, y.to_s, z.to_s]
+    command = [@command_path, @cfg["config_path"], @cfg["title"], x.to_s, y.to_s, z.to_s]
     @log.msginfo(@lt+"running -> #{command.join(" ")}")
     
     @log.msginfo(@lt+"Starting subtiler (#{x},#{y}.#{z})..")

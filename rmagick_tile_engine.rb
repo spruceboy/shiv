@@ -11,12 +11,6 @@ class RmagickTileEngine  < TileEngine
   
   def initialize (cfg, logger)
     super(cfg,logger)
-    @x_size = cfg["tiles"]["x_size"]
-    @y_size = cfg["tiles"]["y_size"]
-    @x_count = cfg["tiles"]["x_count"]
-    @y_count = cfg["tiles"]["y_count"]
-    @num_colors =  cfg["tiles"]["colors"] - 4 if ( cfg["tiles"]["colors"] )
-    
     
     ##
     # Get some fonts for writting debug stuff into the tiles..
@@ -29,44 +23,43 @@ class RmagickTileEngine  < TileEngine
     @downloader = SimpleHttpClient.new
     
     ##
-    # Create a mutex for locking on a per-engine basis...
-    
-    ##
-    # debug flag
-    @tile_debug = cfg["debug"]
-    
-    ##
     # record class name for later debug messages
     @lt = self.class.to_s + ":"
     
-    ##
-    # Color for marking...
-    
-    if (@cfg["label"])
-      @label_color= "rgb(#{cfg["label"]["color"][0]}, #{cfg["label"]["color"][1]}, #{cfg["label"]["color"][2]} )"
-      @label_blend = cfg["label"]["color"][3].to_f  / 256.0
-      @label_size = cfg["label"]["size"]
-    end
-    
-    if (@cfg["watermark"])
-      @watermark = true
-      @watermark_image = Magick::Image::read(@cfg["watermark"]["image"]).first 
-      @watermark_xbuff =  @cfg["watermark"]["x_buffer"]
-      @watermark_ybuff =  @cfg["watermark"]["y_buffer"] + @watermark_image.rows
-      @watermark_max_x =  @x_size - 2*@watermark_xbuff - @watermark_image.columns
-      @watermark_max_y =  @y_size - 2*@watermark_ybuff - @watermark_image.rows
-      @watermark_blend = @cfg["watermark"]["blending"]
-    end
-    
     @locker = TileLockerFile.new(@log)
     
+    setup_labels()
+    setup_watermarking()
   end
+  
   private
   
+  ##
+  #Setup stuff if labels are required
+  def setup_labels
+    return if (!@cfg["label"]) #no labels..
+    # Color for marking - if configured to do so..
+    @label_color= "rgb(#{@cfg["label"]["color"][0]}, #{@cfg["label"]["color"][1]}, #{@cfg["label"]["color"][2]} )"
+    @label_blend = @cfg["label"]["color"][3].to_f  / 256.0
+    @label_size = @cfg["label"]["size"]
+  end
+    
+  ##
+  # setup stuff if watermarking is required..
+  def setup_watermarking
+    return if (!@cfg["watermark"]) #no watermarking..
+    @watermark = true
+    @watermark_image = Magick::Image::read(@cfg["watermark"]["image"]).first 
+    @watermark_xbuff =  @cfg["watermark"]["x_buffer"]
+    @watermark_ybuff =  @cfg["watermark"]["y_buffer"] + @watermark_image.rows
+    @watermark_max_x =  @x_size - 2*@watermark_xbuff - @watermark_image.columns
+    @watermark_max_y =  @y_size - 2*@watermark_ybuff - @watermark_image.rows
+    @watermark_blend = @cfg["watermark"]["blending"]
+  end
   
   ##
   # draws text, what a pain!
-  # Wow, this is stupid.. Cannot reliably write text into images, need to make a new image,
+  # Wow, this is stupid.. Cannot reliably write text into images w/rmagick, need to make a new image,
   # then blend... wow the pain!
   #
   def draw_text (img,font, msg,x,y, color, blend )
@@ -112,6 +105,7 @@ class RmagickTileEngine  < TileEngine
     return watered
   end
   
+  # reduce the number of colors, useful if original dataset has a limited number of colors..
   def color_reduce ( img)
     ## arguments should be configurable, or random +/1 a configureable bit.. improve this.
     img = img.quantize(@num_colors, Magick::RGBColorspace)
@@ -120,7 +114,6 @@ class RmagickTileEngine  < TileEngine
   
   # Makes a tile.
   def tile_gen (x,y,z)
-    
     mn = "tile_gen:"
     @log.msgdebug(@lt+mn + "(#{x},#{y},#{z})")
     
@@ -155,7 +148,7 @@ class RmagickTileEngine  < TileEngine
       end
       
       # Local file to write data too
-      i = Tempfile.new(@cfg["temp_area"])
+      i = Tempfile.new("shiv_temp_tile", @cfg["temp_area"])
       
       #convert x,y,z to a bounding box
       bbox = x_y_z_to_map_x_y(x,y,z)
@@ -170,7 +163,7 @@ class RmagickTileEngine  < TileEngine
       im = Magick::Image::from_blob(@downloader.easy_body(url)).first
       
       #Is the image returned good?
-      raise("No img returned for #{url} -> something serously wrong.") if ( !im )
+      raise("No img returned for #{url} -> something serously wrong - WMS is probibly broken..") if ( !im )
       
       #if debug, draw some info into the tiles themselves..
       im = draw_text(im,
@@ -203,15 +196,12 @@ class RmagickTileEngine  < TileEngine
     
     ###
     # shift so its aligned to the x_size/y_size grid...
-    x = (x / @x_count)*@x_count
-    y = (y / @y_count)*@y_count
+    x,y = shift_x_y(x,y)
     
     begin
-    
-      @log.msgdebug(@lt+mn + "rebased to (#{x},#{y},#{z})")
-    
       @log.msgdebug(@lt+mn + ":Locking for #{x},#{y},#{z}")
       if ( @locker.check_and_wait(x,y,z)) #Returns when ok to start fetching tiles, true if fetch was done durring waiting..
+        # If we are here, then the lock released and the tile is already generated - return!
         @locker.release_lock(x,y,z)
         return
       end
@@ -220,14 +210,8 @@ class RmagickTileEngine  < TileEngine
       t = Tempfile.new(@cfg["temp_area"])
       @log.msgdebug(@lt+mn + "tmpfile => {#{t.path}}")
       
-      # x,y,z to bounding box
-      bbox = x_y_z_to_map_x_y(x,y,z)
-      
-      # bounding box of end tile set 
-      bbox_big = x_y_z_to_map_x_y(x+@x_count-1,y+@y_count-1,z)
-      
-      #Format the url..
-      url = sprintf(@cfg["source_url"], @x_size*@x_count , @y_size*@y_count, bbox["x_min"],bbox["y_min"], bbox_big["x_max"], bbox_big["y_max"] )
+      #get url..
+      url=get_url_for_x_y_z(x,y,z)
       
       # Download the image to a local copy..
       @log.msgdebug(@lt+mn + "url => {#{url}}")
@@ -235,30 +219,26 @@ class RmagickTileEngine  < TileEngine
       #Download to tmp file..
       #@downloader.easy_download(url, t.path)
       im = Magick::Image::from_blob(@downloader.easy_body(url)).first
+      
+      raise "No img returned for #{url} -> something serously wrong. Mostly likely the image fetched is not a image (broken server)." if (!im)
+      
+      # Label..
       im = draw_text(im, @label_font, @cfg["label"]["text"],5+rand(im.columns/2.0),5+rand(im.rows-30),@label_color,@label_blend) if (@label_color)
       
-      if ( !im )
-        raise "No img returned for #{url} -> something serously wrong. Mostly likely the image fetched is not a image (broken server)."
-      end
-      
+      #reduce colors, if configured to do so.
       im = color_reduce(im) if (@num_colors)
       
       #Loop though grid, writting out tiles
-      0.upto(@x_count-1) do |i|
-        0.upto(@y_count-1) do |j|
-          mk_path(i+x,j+y,z)
-          path = get_path(x+i,y+j,z)
-          @log.msgdebug(@lt+mn + ":cutting (#{i*@x_size}, #{j*@y_size})")
-          if (!File.exists?(path) || true)
-            tile = im.crop(i*@x_size,(@y_count - j - 1)*@y_size, @x_size,@y_size)
-            tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
-            tile = watermark(tile) if (@watermark)
-            tile.write(path)
-            tile.destroy!
-          else
-            @log.msgerror(@lt+mn + "should not have found #{x}/#{y}/#{z}")
-            raise "dup tile found for #{x}/#{y}/#{z} - whats the deal jay, fix me!"
-          end
+      each_tile_ul(x,y) do |ul_x, ul_y, path|
+        if (!File.exists?(path) || true)
+          tile = im.crop(ul_x,ul_y, @x_size,@y_size)
+          tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
+          tile = watermark(tile) if (@watermark)
+          tile.write(path)
+          tile.destroy!
+        else
+          @log.msgerror(@lt+mn + "should not have found #{x}/#{y}/#{z}")
+          raise "dup tile found for #{x}/#{y}/#{z} - whats the deal jay, fix me!"
         end
       end
       @locker.release_lock(x,y,z) # Release that lock!
