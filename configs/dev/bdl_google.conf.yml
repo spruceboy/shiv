@@ -9,10 +9,10 @@ tiles:
   x_size: 256
   x_count: 5
   y_count: 5
-temp_area: /tmp/tile_temp/
+temp_area: ./tile_temp/
 debug: false
 storage_format: jpg
-cache_dir: /hub/cache/production/bdl/
+cache_dir: ./cache/production/bdl/
 base_extents:
   ymax: 20037508.3427892
   xmax: 20037508.3427892
