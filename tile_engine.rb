@@ -142,7 +142,7 @@ class TileEngine
   end
   
   #does a block w/upper left and path - used to loop though tiles for cutting them up..
-  def each_tile_ul(x,y)
+  def each_tile_ul(x,y,z)
     0.upto(@x_count-1) do |i|
       0.upto(@y_count-1) do |j|
         mk_path(i+x,j+y,z)
@@ -208,7 +208,9 @@ class ExternalTileEngine  < TileEngine
     
     @log.msginfo(@lt+"Subtiler finished (#{x},#{y}.#{z}).")
     if (results["error"])
-      raise "external tiler error, reason -> #{results["reason"]}"
+      #output from the external tiler should include backtrace, logs, and reason..
+      #({"error"=>true, "reason" => e, "backtrace" => e.backtrace, "logs"=>logs }, STDOUT)
+      raise "external tiler error, reason -> #{results["reason"]}, backtrace -> #{results["backtrace"]}, command line -> '#{command.join(" ")}'"
     end
     return path
   end

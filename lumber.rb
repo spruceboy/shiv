@@ -125,10 +125,9 @@ class LumberNoFile
     
     
     def msginfo(s)
-        return if (@quiet)
         return if (!@verbose)
         format_for_output(@info_fd, "INFO", s)
-        format_for_output(STDOUT, "INFO", s)
+        format_for_output(STDOUT, "INFO", s) if (!@quiet)
     end
     
     def loginfo(s)
@@ -136,9 +135,9 @@ class LumberNoFile
     end
     
     def msgdebug(s)
-        return if ( !@debug || @quiet)
+        return if ( !@debug )
         format_for_output(@info_fd, "DEBUG", s)
-        format_for_output(STDOUT, "DEBUG", s)
+        format_for_output(STDOUT, "DEBUG", s) if (!@quiet)
     end
     
     def msgstatus( s)

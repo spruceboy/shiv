@@ -1,12 +1,18 @@
 --- 
 tile_engines:
   conf_dir: "./conf.d/"
-  mailer_config: 
+  mailer_config: &id001
     from: cable@alaska.edu
     to: cable@alaska.edu
     setup:
       :domain: gina.alaska.edu
       :address: dino.gi.alaska.edu
+controller:
+  base_url: "/controller"
+  ips_allowed:
+    - 137.229.19.236
+    - 0.0.0.0
+  reload_action: "reload"
 log: 
   info: true
   verbose: true

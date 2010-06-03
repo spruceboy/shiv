@@ -14,7 +14,7 @@ require "lumber"
 if (ARGV.length != 4)
   puts("Usage:")
   puts("\t./tile_grabber.rb [tile_engine.cfg.yml] [x] [y] [z]")
-  return YAML.dump({"error"=>true, "logs"=>logs}, STDOUT)
+  return YAML.dump({"error"=>true, "logs"=>[]}, STDOUT)
 end
 
 begin
@@ -55,7 +55,7 @@ rescue => e
   stuff += "--------------------------\n"
   stuff += e.backtrace.join("\n")
   stuff += "--------------------------\n"
-  Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "tile grabber crash..", [stuff])
+  #Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "tile grabber crash..", [stuff])
   exit(-1)
 end
 

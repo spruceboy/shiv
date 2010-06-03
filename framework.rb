@@ -38,6 +38,10 @@ class Roundhouse
       #mount up the /benchmark area..
       reg( cfg["http"]["base"] + "/benchmark", BenchmarkHandler.new(@logger))
       
+      path = cfg["http"]["base"] + cfg["controller"]["base_url"]
+      @logger.msginfo("Main:Setting up the controller at '#{path}''")
+      reg( path , ControllerHandler.new(@logger,cfg, self ))
+      
       #loop though the tile engines in the config file, and fire up and mount each..
       configs(cfg) do |tcfg|
          path = cfg["http"]["base"] + "/" + tcfg["title"] + "/tile/"

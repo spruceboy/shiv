@@ -136,6 +136,11 @@ class RmagickTileEngine  < TileEngine
       end
   end
   
+  ###
+  # Get a temp file...
+  def get_tempfile ()
+    return Tempfile.new("shiv_temp_tile", @cfg["temp_area"])
+  end
   ##
   # Fetch a single tile.. - normally used to fetch edges or cover-the-whole-earth-tiles
   def fetch_single_tile(x,y,z)
@@ -148,7 +153,7 @@ class RmagickTileEngine  < TileEngine
       end
       
       # Local file to write data too
-      i = Tempfile.new("shiv_temp_tile", @cfg["temp_area"])
+      i = get_tempfile()
       
       #convert x,y,z to a bounding box
       bbox = x_y_z_to_map_x_y(x,y,z)
@@ -207,7 +212,7 @@ class RmagickTileEngine  < TileEngine
       end
       
       # Temp file for temp local storage of image..
-      t = Tempfile.new(@cfg["temp_area"])
+      t = get_tempfile() 
       @log.msgdebug(@lt+mn + "tmpfile => {#{t.path}}")
       
       #get url..
@@ -229,7 +234,7 @@ class RmagickTileEngine  < TileEngine
       im = color_reduce(im) if (@num_colors)
       
       #Loop though grid, writting out tiles
-      each_tile_ul(x,y) do |ul_x, ul_y, path|
+      each_tile_ul(x,y,z) do |ul_x, ul_y, path|
         if (!File.exists?(path) || true)
           tile = im.crop(ul_x,ul_y, @x_size,@y_size)
           tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
