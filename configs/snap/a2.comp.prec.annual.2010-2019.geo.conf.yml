@@ -1,0 +1,20 @@
+--- 
+error: 
+  format: png
+  img: /hub/cache/production/images/error.png
+title: a2.comp.prec.annual.2010-2019.geo
+source_url: http://hippy.gina.alaska.edu/snap/example_wms?layers=a2.comp.prec.annual.2010-2019&styles=&service=WMS&width=%d&format=image/png&request=GetMap&height=%d&srs=EPSG:4326&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
+tiles: 
+  y_size: 256
+  x_size: 256
+  x_count: 3
+  y_count: 3
+temp_area: ./tile_temp/
+debug: false
+storage_format: png
+cache_dir: /hub/cache/production/a2.comp.prec.annual.2010-2019.geo/
+base_extents: 
+  ymax: 90.0
+  xmax: 180.0
+  ymin: -90.0
+  xmin: -180.0

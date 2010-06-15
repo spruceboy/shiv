@@ -11,10 +11,11 @@ require "lumber"
 # This thing/wiget/unholy abomination is a command line tile fetcher - used to seperate out the tile extration process from shiv,
 # to make things a little more fault tollerant/durrable.
 
-if (ARGV.length != 4)
+if (ARGV.length != 5)
   puts("Usage:")
-  puts("\t./tile_grabber.rb [tile_engine.cfg.yml] [x] [y] [z]")
-  return YAML.dump({"error"=>true, "logs"=>[]}, STDOUT)
+  puts("\t./tile_grabber.rb [tile_engine.cfg.yml] [name] [x] [y] [z]")
+  YAML.dump({"error"=>true, "logs"=>[]}, STDOUT)
+  exit(-1)
 end
 
 begin
@@ -32,9 +33,9 @@ begin
   cfg = File.open(ARGV[0]) {|fd| YAML.load(fd)}
   
   # x,y,z -> self explainitaory. 
-  x = ARGV[1].to_i
-  y = ARGV[2].to_i
-  z = ARGV[3].to_i
+  x = ARGV[2].to_i
+  y = ARGV[3].to_i
+  z = ARGV[4].to_i
 
   #go though the configs, find the correct one..
   tile_engine =  RmagickTileEngine.new(cfg, log)
