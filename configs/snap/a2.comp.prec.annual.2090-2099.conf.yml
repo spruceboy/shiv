@@ -12,7 +12,7 @@ tiles:
 temp_area: ./tile_temp/
 debug: false
 storage_format: png
-cache_dir: /hub/cache/production/a2.comp.prec.annual.2090-2099/
+cache_dir: /hub/cache/production/speedy/a2.comp.prec.annual.2090-2099/
 base_extents: 
   ymax: 20037508.3427892
   xmax: 20037508.3427892

@@ -7,7 +7,7 @@ ARGV.each do |x|
  	cfg  = template.dup
 	cfg["source_url"] = url
 	cfg["title"] = x
-	cfg["cache_dir"] =  "/hub/cache/production/" + x + "/"
+	cfg["cache_dir"] =  "/hub/cache/production/speedy/" + x + "/"
 
 	File.open(x+".conf.yml", "w") {|fd| YAML.dump(cfg, fd)}
 end
