@@ -342,7 +342,8 @@ class TileLockerFile
   def locked(x,y,z)
     @m_lock.synchronize do
       path = getpath(x,y,z)
-      begin
+      
+      begin  #this section deals with old locks - if lock file exists and is old, delete..
         if ( File.exists?(path) && ((Time.now - File.mtime(path)) > WAIT_TIME) )
           @log.msgerror(@lt +"Lock timeout on #{x},#{y},#{z}  ")
           File.delete(path)
