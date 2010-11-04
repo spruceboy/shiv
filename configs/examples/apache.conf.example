@@ -1,0 +1,24 @@
+
+<VirtualHost *:80>
+  ServerName            tiles.foo.com
+  ProxyRequests         Off
+  ProxyPreserveHost     On
+
+  CustomLog       	/www/foo/logs/access.proxy.log combined
+  ErrorLog	 	/www/foo/logs/error.log 
+  DocumentRoot 		/www/foo/htdocs
+  ProxyPass             /tilesrv/       balancer://tilesrv/tilesrv/
+  ProxyPassReverse      /tilesrv/       balancer://tilesrv/tilesrv/
+
+
+  RequestHeader Set X-Sendfile-Type X-Sendfile
+  XSendFile on
+  XSendFilePath /www/foo/cache/
+  
+
+ <Proxy balancer://tilesrv>
+        BalancerMember http://localhost:7765
+ </Proxy>
+
+</VirtualHost>
+

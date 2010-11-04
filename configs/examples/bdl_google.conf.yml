@@ -1,7 +1,7 @@
 --
 error:
   format: png
-  img: /hub/cache/production/images/error.png
+  img: /www/foo/cache/images/error.png
 title: bdl
 source_url: http://wms.alaskamapped.org/bdl?layers=bdl_low_res,bdl_mid_res,bdl_high_res&styles=&service=WMS&width=%d&format=image/jpeg&request=GetMap&height=%d&srs=EPSG:900913&version=1.1.1&bbox=%6.10f,%6.10f,%6.10f,%6.10f
 tiles:
@@ -12,7 +12,7 @@ tiles:
 temp_area: ./tile_temp/
 debug: false
 storage_format: jpg
-cache_dir: ./cache/production/bdl/
+cache_dir:  /www/foo/cache/
 base_extents:
   ymax: 20037508.3427892
   xmax: 20037508.3427892

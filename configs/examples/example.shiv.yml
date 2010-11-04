@@ -24,14 +24,14 @@ kml:
   mailer_config: *id001
   sets:
     drg:
-      source: "http://swmha.gina.alaska.edu/tilesrv/drg_geo/bbox/%.20f/%.20f/%.20f/%.20f/"
+      source: "http://tiles.foo.com/tilesrv/bdl/bbox/%.20f/%.20f/%.20f/%.20f/"
       tl:
         x: -180
         y: 90
       br:
         x: 180
         y: -90
-      url: "http://swmha.gina.alaska.edu/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
+      url: "http://tiles.foo.com/tilesrv/kml/%s/%.20f/%.20f/%.20f/%.20f"
 http: 
   bind: 0.0.0.0
   base: /tilesrv
