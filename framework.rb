@@ -58,7 +58,9 @@ class Roundhouse
       ##
       # Kml serving gadget..
       reg(cfg["http"]["base"] + "/" + "kml", KMLHandler.new(@logger, cfg["kml"]))
-      
+      ##
+      # ESRI TOC serving gadget..
+      reg(cfg["http"]["base"] + "/ArcGIS/rest/services", ESRI_Service_Fooler.new(@logger, cfg["esri"]))
       @logger.logstatus("Up.")
     end
     

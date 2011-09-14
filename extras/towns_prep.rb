@@ -1,10 +1,9 @@
 #!/usr/bin/env ruby
+# A very basic util to add to a yaml-ized list of towns google and alaska albers cordinates..
+# Possibly not very useful to the masses.. but included non-the-less.
 
 require "yaml"
 require "pp"
-
-
-
 
 towns = File.open(ARGV.first) {|x| YAML.load(x)}
 

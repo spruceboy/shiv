@@ -1,4 +1,5 @@
-Basic notes for shiv tileserving benchmarks using different server engines..
+Some very asic notes for shiv tileserving benchmarks using different webserver engines inside rack.
+Some of these engines are not very useful (like thin for example) due to the fact they are single threaded, but are included for completeness.
 For a single 20k tile, tests run w/ab like: ab -c 100 -n 4000 
 
 Webrick:

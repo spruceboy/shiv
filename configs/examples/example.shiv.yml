@@ -1,0 +1,38 @@
+--- 
+tile_engines:
+  conf_dir: "./conf.d/"
+  mailer_config: &id001
+    from: example@foo.edu
+    to: example@foo.edu
+    setup:
+      :domain: foo.edu
+      :address: foo.edu
+controller:
+  base_url: "/controller"
+  ips_allowed:
+    - 99.99.19.236
+    - 0.0.0.0
+  reload_action: "reload"
+log: 
+  info: true
+  verbose: true
+  debug: false
+  quiet: false
+  logdir: "./logs/"
+kml:
+  root_url: "/tilesrv/kml/"
+  mailer_config: *id001
+  sets:
+    drg:
+      source: "http://tiles.foo.com/tilesrv/bdl/bbox/%.20f/%.20f/%.20f/%.20f/"
+      tl:
+        x: -180
+        y: 90
+      br:
+        x: 180
+        y: -90
+esri:
+  note: "something will go here someday - this is a placeholder."
+http: 
+  bind: 0.0.0.0
+  base: /rest/

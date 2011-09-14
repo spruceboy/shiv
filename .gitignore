@@ -1,6 +1,5 @@
 logs
 conf.d
-shiv.op.yml
 shiv.yml
 cache
 external_tiler
