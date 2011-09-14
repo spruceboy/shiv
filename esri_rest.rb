@@ -248,24 +248,8 @@ class ESRI_Service_Fooler < RackWelder
 	##
 	# get start time, for tracking purposes..
 	start_tm = Time.now
-	
 	params = request.params()
-	pp params.keys
-	
-	# first check the style of request - if includes json, then probibly a getpoo request..
-	#obvoulsy better checking is in order..
-	if (params["f"] )
-	    ##
-	    # Do request..
-	    # Dig up parms..
-	    if (params["callback"])
-		give_X(response, 200, "text/plain", params["callback"] + "(" + get_poo().to_json + ");")
-	    else
-		give_X(response, 200, "text/plain", get_poo().to_json)
-	    end
-	    return
-	end
-	give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
+        give_X(response, 200, "text/plain", "Something is coming to this page soon.")
 	return
     rescue => excpt
         ###
@@ -281,14 +265,6 @@ class ESRI_Service_Fooler < RackWelder
         stuff += "request => " + YAML.dump(request)+ "\n-------\n"
         Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "shiv crash..", [stuff])
         @logger.logerr("Crash in::#{@lt}" + stuff)
-       end
     end
-       
-    private
-    def get_poo ( )
-	responce_template = { "currentVersion"=>"9.31","folders"=>[],"services"=>[]}
-	@cfg["layers"].each {|x|responce_template["services"] << {"name"=>x,"type"=>"MapServer"} }
-	responce_template 
-    end
-    
   end
+end
