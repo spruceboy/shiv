@@ -37,6 +37,8 @@ begin
   y = ARGV[3].to_i
   z = ARGV[4].to_i
 
+  raise ("x,y,or z is out of range for (#{x},#{y},#{z})") if (x > (2**(z+1)) || y > (2**(z+1) ) || z > 24 ) 
+
   #go though the configs, find the correct one..
   tile_engine =  RmagickTileEngine.new(cfg, log)
   

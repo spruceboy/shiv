@@ -59,7 +59,7 @@ def do_tile(cfg, x,y,z,waggle, config_path, name)
 	  j = 0 if (j < 0)
 	  while(j <= y+waggle && j <= max)
 	       if (!File.exists?(@eng.get_path(i,j,z)) )
-		    command = "ruby tile_grabber.rb #{config_path} #{name} #{i} #{j} #{z}"
+		    command = "./external_tiler #{config_path} #{name} #{i} #{j} #{z}"
 		   # puts("Running \"#{command}\"")
 		    start_tm = Time.now
 		    status = YAML.load(`#{command}`)
@@ -86,7 +86,7 @@ end
 
 
 
-shif_conf = File.open(ARGV[0]){|x| YAML.load(x) }
+shiv_conf = File.open(ARGV[0]){|x| YAML.load(x) }
 towns_conf = File.open(ARGV[1]){|x| YAML.load(x) }
 
 z = ARGV[3].to_i
@@ -95,17 +95,14 @@ fiddle = 128 if (!fiddle)
 key = ARGV[5]
 key = "google" if (!key)
 
-shif_conf["tile_engines"].each do |item|
-    next if (item["title"] != ARGV[2])
-    @eng = TileEngine.new(item, nil)
-    shuffle(towns_conf.keys).each do |town_k|
-	  STDOUT.printf("Doing #{key}|#{town_k}:")
-	  STDOUT.flush()
-	  town = towns_conf[town_k]
-	  pp town
-	  tile = get_tile(town[key][0], town[key][1], z, item )
-	  do_tile(item, tile["x"], tile["y"], z, fiddle, ARGV[0], ARGV[2])
-    end
+@eng = TileEngine.new(shiv_conf, z)
+shuffle(towns_conf.keys).each do |town_k|
+      STDOUT.printf("Doing #{key}|#{town_k}:")
+      STDOUT.flush()
+      town = towns_conf[town_k]
+      puts("#{town_k}->#{town[key][0]},#{town[key][1]}")
+      tile = get_tile(town[key][0], town[key][1], z, shiv_conf)
+      do_tile(shiv_conf, tile["x"], tile["y"], z, fiddle, ARGV[0], ARGV[2])
 end
 
 puts("Done.")
