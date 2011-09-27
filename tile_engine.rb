@@ -58,8 +58,9 @@ class TileEngine
   end
 
   def is_fiddle (x,y,z)
+   return false if (!cfg["tiles"]["fiddle"])
    return false if ( x ==0 || y == 0 )
-   return true if ( x < 2**z-1 && y < 2**z-1) 
+   return true if ( (x < (2**z-1)) && (y < 2**z-1)) 
    return false
   end
   
@@ -149,14 +150,23 @@ class TileEngine
   
   #does a block w/upper left and path - used to loop though tiles for cutting them up..
   def each_tile_ul(x,y,z)
-    start = 0 
-    start = 1 if (is_fiddle(x,y,z))
-    start.upto(@x_count-1) do |i|
-      start.upto(@y_count-1) do |j|
-        mk_path(i+x,j+y,z)
-        path = get_path(x+i,y+j,z)
-        yield( i*@x_size, (@y_count - j - 1)*@y_size, path)
-      end
+    if (is_fiddle(x,y,z))
+    	0.upto(@x_count) do |i|
+      		0.upto(@y_count) do |j|
+        		mk_path(i+x,j+y,z)
+        		path = get_path(x+i,y+j,z)
+			next if ( i == 0 || j ==0 || i == @x_count|| i == @y_count) 
+        		yield( i*@x_size, ((@y_count+1) - j - 1)*@y_size, path)
+      		end
+    	end
+    else
+        0.upto(@x_count-1) do |i|
+                0.upto(@y_count-1) do |j|
+                        mk_path(i+x,j+y,z)
+                        path = get_path(x+i,y+j,z)
+                        yield( i*@x_size, (@y_count - j - 1)*@y_size, path)
+                end
+        end
     end
   end
     
