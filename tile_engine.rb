@@ -56,6 +56,12 @@ class TileEngine
     tile_gen(x,y,z) if (File.exists?(path) && File.size?(path) == 0)
     return path
   end
+
+  def is_fiddle (x,y,z)
+   return false if ( x ==0 || y == 0 )
+   return true if ( x < 2**z-1 && y < 2**z-1) 
+   return false
+  end
   
   ##
   # Note -> z level = log(width of world / width of request)/log(2)
@@ -143,8 +149,10 @@ class TileEngine
   
   #does a block w/upper left and path - used to loop though tiles for cutting them up..
   def each_tile_ul(x,y,z)
-    0.upto(@x_count-1) do |i|
-      0.upto(@y_count-1) do |j|
+    start = 0 
+    start = 1 if (is_fiddle(x,y,z))
+    start.upto(@x_count-1) do |i|
+      start.upto(@y_count-1) do |j|
         mk_path(i+x,j+y,z)
         path = get_path(x+i,y+j,z)
         yield( i*@x_size, (@y_count - j - 1)*@y_size, path)
@@ -166,9 +174,20 @@ class TileEngine
       
       # bounding box of end tile set 
       bbox_big = x_y_z_to_map_x_y(x+@x_count-1,y+@y_count-1,z)
+
+      x_count = @x_count
+      y_count = @y_count 
+
+      # If fiddle is turned on, inlargen request by 1 tile in each direction
+      if (is_fiddle(x,y,z))
+		bbox = x_y_z_to_map_x_y(x-1,y-1,z)
+		bbox_big = x_y_z_to_map_x_y(x+@x_count,y+@y_count,z)
+		x_count += 2
+		y_count += 2
+      end
       
       #Format the url..
-      sprintf(@cfg["source_url"], @x_size*@x_count , @y_size*@y_count, bbox["x_min"],bbox["y_min"], bbox_big["x_max"], bbox_big["y_max"] )
+      sprintf(@cfg["source_url"], @x_size*x_count , @y_size*y_count, bbox["x_min"],bbox["y_min"], bbox_big["x_max"], bbox_big["y_max"] )
   end
 end
 

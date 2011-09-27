@@ -202,7 +202,7 @@ class RmagickTileEngine  < TileEngine
     ###
     # shift so its aligned to the x_size/y_size grid...
     x,y = shift_x_y(x,y)
-    
+
     begin
       @log.msgdebug(@lt+mn + ":Locking for #{x},#{y},#{z}")
       if ( @locker.check_and_wait(x,y,z)) #Returns when ok to start fetching tiles, true if fetch was done durring waiting..
