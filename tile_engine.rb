@@ -58,7 +58,7 @@ class TileEngine
   end
 
   def is_fiddle (x,y,z)
-   return false if (!cfg["tiles"]["fiddle"])
+   return false if (!@cfg["tiles"]["fiddle"])
    return false if ( x ==0 || y == 0 )
    return true if ( (x < (2**z-1)) && (y < 2**z-1)) 
    return false
