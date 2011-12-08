@@ -190,7 +190,7 @@ class KMLHandler < RackWelder
                 "Region"=>
      		    [
                         {
-                            "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"]}],
+                            "Lod"=>[ {"maxLodPixels"=>["-1"], "minLodPixels"=>["128"]}],
                             "LatLonAltBox"=>
                                 [{
                                     "east"=>["#{br_x}"],
