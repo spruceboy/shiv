@@ -129,8 +129,7 @@ class KMLHandler < RackWelder
         "Link"=>
           [{
             "href"=>[url_to_lower_level(cfg,set,tl_x, tl_y, br_x, br_y)],
-            "viewRefreshMode"=>["onRegion"],
-            "viewFormat"=>[{}]
+            "viewRefreshMode"=>["onRegion"]
           }]
     } 
   end
@@ -166,7 +165,7 @@ class KMLHandler < RackWelder
     hsh = {"Document"=>
   	[
             {
-                "name"=>[sprintf("%s_%.20f_%.20f_%.20f_%.20f%", set,tl_x, tl_y, br_x, br_y) ],
+                "name"=>[sprintf("%s_%.20f_%.20f_%.20f_%.20f%v%d", set,tl_x, tl_y, br_x, br_y, rand(32000)) ],
                 "NetworkLink"=> networklink,
     		"GroundOverlay"=>
                     [
