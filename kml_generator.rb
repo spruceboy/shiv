@@ -12,17 +12,19 @@ require 'yaml'
 class KMLHandler < RackWelder
   
   #set stuff up, log=logger, cfg=shiv kml config.
-  def initialize ( log,cfg)
+  def initialize ( log,http_conf, set)
     @logger = log
     
     #the ip of the requesting host..
     @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     
     #save the config..
-    @cfg = cfg
-    
+    @cfg = {
+      "set" => set,
+      "source" =>  "http://" +  http_conf["host"] + http_conf["base"]+set + "/bbox/%.20f/%.20f/%.20f/%.20f/",
+      "url" => "http://" + http_conf["host"] + http_conf["base"]+"%s/kml/%.20f/%.20f/%.20f/%.20f/"
+      }
     #save the root url.
-    @url_root = @cfg["root_url"]
   end
   
   
@@ -36,44 +38,39 @@ class KMLHandler < RackWelder
         give404(response, "Try a real url, thats not nil.")
         return
       else
-        uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
-        puts uri
-        
-        # uri once cleaned up, shoudl not be empty..
-        if ( uri == "")
-          give404(response, "Try a real url, perhaps one that is valid.")
-          return
-        end
-        
-        #uri should be for the form /set/lt_x/tl_y/br_x/br_y
+        #uri should be for the form something/set/kml/lt_x/tl_y/br_x/br_y
         uri = uri.split("/")
         
-        if ( uri.length != 5 )
-          give404(response, "Try a real url, perhaps one that is valid and of the form /set/lt_x/tl_y/br_x/br_y") if ( uri.length != 5 )
+        if ( uri.length <= 6 )
+          give404(response, "Try a real url, perhaps one that is valid and of the form /set/lt_x/tl_y/br_x/br_y")
           return
         end
         
-        set = uri[0]
-        tl_x = uri[1].to_f
-        tl_y = uri[2].to_f
-        br_x = uri[3].to_f
-        br_y = uri[4].to_f
+        1.upto(6) {|x| puts "#{x*(-1)} #{uri[x*(-1)]}"}
+        
+        set = uri[-6]
+        tl_x = uri[-4].to_f
+        tl_y = uri[-3].to_f
+        br_x = uri[-2].to_f
+        br_y = uri[-1].to_f
+        
+        if (set != @cfg["set"])
+          give404(response, "Try a real url, perhaps one that is valid and of the form /set/lt_x/tl_y/br_x/br_y where set is \"#{@cfg["set"]}\" not \"#{set}\"")
+          return
+        end
         
         ##
         # This is the case if things are really broken - possibly not possible now..
         # Not sure if the behavior is good, or bad -  should possibly just generate an error now..
         if ( br_x == nil || br_y == nil || tl_x == nil|| tl_y == nil||set==nil)
-            br_x = "180.0"
-            br_y = "-90"
-            tl_x = "-180.0"
-            tl_y = "90"
-            set = "bdl"
+          give404(response, "Try a real url, perhaps one that is valid and of the form /set/kml/lt_x/tl_y/br_x/br_y")
+          return
         end
         
         response.status = 200
         response.header["Content-Type"] = "application/vnd.google-earth.kml+xml"
         @logger.msgdebug("KMLHandler:process:"+ sprintf("(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f))
-        stuff = do_level(@cfg["sets"][set],set,tl_x.to_f, tl_y.to_f, br_x.to_f, br_y.to_f)
+        stuff = do_level(@cfg,set,tl_x.to_f, tl_y.to_f, br_x.to_f, br_y.to_f)
         response.write(stuff)
       end
     rescue => excpt
@@ -86,6 +83,7 @@ class KMLHandler < RackWelder
       stuff += excpt.backtrace.join("\n")
       stuff += "--------------------------\n"
       stuff += "request => " + YAML.dump(request)+ "\n-------\n"
+      puts stuff
       Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "shiv crash..", [stuff])
       @logger.logerr("Crash in::#{@lt}" + stuff)
     end

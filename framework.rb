@@ -53,11 +53,12 @@ class Roundhouse
          path = cfg["http"]["base"] + "/ArcGIS/rest/services/" + tcfg["title"] + "/MapServer/"
          @logger.msginfo("Main:Setting up '#{path}''")
          reg(path, ESRIRestTileHandler.new(tcfg, @logger, cfg["http"]))
+         if ( tcfg["kml"])
+	    path = cfg["http"]["base"] + "/" + tcfg["title"] + "/kml/"
+	     reg(path,KMLHandler.new(@logger, cfg["http"], tcfg["title"]))
+         end
       end
       
-      ##
-      # Kml serving gadget..
-      reg(cfg["http"]["base"] + "/" + "kml", KMLHandler.new(@logger, cfg["kml"]))
       ##
       # ESRI TOC serving gadget..
       reg(cfg["http"]["base"] + "/ArcGIS/rest/services", ESRI_Service_Fooler.new(@logger, cfg["esri"]))
