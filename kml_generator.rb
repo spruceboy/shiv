@@ -116,7 +116,7 @@ class KMLHandler < RackWelder
         "Region"=>
           [
             {
-              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"] ,  "minFadeExtent"=>["128"],  "maxFadeExtent"=>["128"]}}],
+              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"] ,  "minFadeExtent"=>["128"],  "maxFadeExtent"=>["128"]}],
               "LatLonAltBox"=>
                 [{
                   "east"=>["#{br_x}"],
