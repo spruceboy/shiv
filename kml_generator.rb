@@ -21,8 +21,8 @@ class KMLHandler < RackWelder
     #save the config..
     @cfg = {
       "set" => set,
-      "source" =>  "http://" +  http_conf["host"] + http_conf["base"]+set + "/bbox/%.20f/%.20f/%.20f/%.20f/",
-      "url" => "http://" + http_conf["host"] + http_conf["base"]+"%s/kml/%.20f/%.20f/%.20f/%.20f/"
+      "source" =>  "http://" +  http_conf["host"] + http_conf["base"] +"/" +set + "/bbox/%.20f/%.20f/%.20f/%.20f/",
+      "url" => "http://" + http_conf["host"] + http_conf["base"]+"/" + "%s/kml/%.20f/%.20f/%.20f/%.20f/"
       }
     #save the root url.
   end
