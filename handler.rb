@@ -355,7 +355,7 @@ class BBoxTileHandler < RackWelder
 	# Url should be of the form "(0)/token(1)/bbox(2)/minx(3)/miny(4)/maxx(5)/maxy(6)"
 	# Example:
 	#"/drg_geo/bbox/-150.46875000000000000000/66.44531250000000000000/-149.76562500000000000000/66.79687500000000000000"
-	if (uri.length != 7 || uri[2].downcase != "bbox")
+	if (uri.length != 7 || uri.length != 8 || uri[2].downcase != "bbox")
 	    @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
 	    give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
 	    return;
