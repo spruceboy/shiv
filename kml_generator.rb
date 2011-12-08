@@ -144,7 +144,7 @@ class KMLHandler < RackWelder
     w = w / 2.0
     h = h / 2.0
     
-    maxlodpixels = -1
+    maxlodpixels = 1024
     #maxlodpixels = 680
     #maxlodpixels = -1 if ((  br_x - tl_x   > 5 ))
     
@@ -191,7 +191,7 @@ class KMLHandler < RackWelder
                 "Region"=>
      		    [
                         {
-                            "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["180"]}],
+                            "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["64"]}],
                             "LatLonAltBox"=>
                                 [{
                                     "east"=>["#{br_x}"],
