@@ -116,7 +116,7 @@ class KMLHandler < RackWelder
         "Region"=>
           [
             {
-              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["32"]}],
+              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["124"]}],
               "LatLonAltBox"=>
                 [{
                   "east"=>["#{br_x}"],
@@ -190,7 +190,7 @@ class KMLHandler < RackWelder
                 "Region"=>
      		    [
                         {
-                            "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["32"]}],
+                            "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["124"]}],
                             "LatLonAltBox"=>
                                 [{
                                     "east"=>["#{br_x}"],
