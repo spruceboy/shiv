@@ -106,7 +106,7 @@ class KMLHandler < RackWelder
   # Generates a bounding box google kml style
   
   def hshtoLatLonAltBox ( cfg,set,tl_x, tl_y, br_x, br_y , note)
-    maxlodpixels = 1024
+    maxlodpixels = 512
     @logger.msgdebug("KMLHandler:hshtoLatLonAltBox:" + sprintf("((br_x - tl_x))=>%g (%s)",(br_x - tl_x), note ))
     
     #Old Lod
@@ -116,7 +116,7 @@ class KMLHandler < RackWelder
         "Region"=>
           [
             {
-              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["64"] ,  "minFadeExtent"=>["0"],  "maxFadeExtent"=>["0"]}],
+              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"] ,  "minFadeExtent"=>["10"],  "maxFadeExtent"=>["10"]}],
               "LatLonAltBox"=>
                 [{
                   "east"=>["#{br_x}"],
@@ -143,7 +143,7 @@ class KMLHandler < RackWelder
     w = w / 2.0
     h = h / 2.0
     
-    maxlodpixels = 1024
+    maxlodpixels = 512
     #maxlodpixels = 680
     #maxlodpixels = -1 if ((  br_x - tl_x   > 5 ))
     
@@ -190,7 +190,7 @@ class KMLHandler < RackWelder
                 "Region"=>
      		    [
                         {
-                            "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["64"]}],
+                            "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"]}],
                             "LatLonAltBox"=>
                                 [{
                                     "east"=>["#{br_x}"],
