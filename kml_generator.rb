@@ -184,7 +184,7 @@ class KMLHandler < RackWelder
                                                 "href"=>["#{url_to_img(cfg,set,tl_x, tl_y, br_x, br_y)}"]
                                         }
                                     ],
-                            "drawOrder"=>["#{((1.0/w)*180).to_i}"]
+                            "drawOrder"=>["#{((1.0/w)*180 + 1000).to_i}"]
 			}
 		    ],
                 "Region"=>
