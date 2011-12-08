@@ -99,7 +99,7 @@ class KMLHandler < RackWelder
   #url to actual image..
   def url_to_img(hcfg,set,tl_x, tl_y, br_x, br_y)
     @logger.msgdebug("KMLHandler:url_to_img:"+ sprintf("url_to_lower_level(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f) )
-    return sprintf(hcfg["source"],tl_x, br_y, br_x, tl_y)
+    return sprintf(hcfg["source"],tl_x, br_y, br_x, tl_y) + ".png"
   end
   
   
