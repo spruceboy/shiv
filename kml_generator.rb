@@ -106,7 +106,7 @@ class KMLHandler < RackWelder
   # Generates a bounding box google kml style
   
   def hshtoLatLonAltBox ( cfg,set,tl_x, tl_y, br_x, br_y , note)
-    maxlodpixels = 512
+    maxlodpixels = -1
     @logger.msgdebug("KMLHandler:hshtoLatLonAltBox:" + sprintf("((br_x - tl_x))=>%g (%s)",(br_x - tl_x), note ))
     
     #Old Lod
@@ -116,7 +116,7 @@ class KMLHandler < RackWelder
         "Region"=>
           [
             {
-              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"] ,  "minFadeExtent"=>["10"],  "maxFadeExtent"=>["10"]}],
+              "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"]}],
               "LatLonAltBox"=>
                 [{
                   "east"=>["#{br_x}"],
