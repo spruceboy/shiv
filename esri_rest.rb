@@ -170,6 +170,10 @@ class ESRIRestTileHandler < RackWelder
 	tile_width = @cfg["tiles"]["x_size"]
 	#Setup LODs..
 	@cfg["esri_rest"]["LOD"].each { |i|  hsh_template["tileInfo"]["lods"] << i}
+
+	hsh_template["documentInfo"] = @cfg["esri_rest"]["documentInfo"] if ( @cfg["esri_rest"]["documentInfo"] )
+        hsh_template["copyrightText"] = @cfg["esri_rest"]["copyrightText"] if (  @cfg["esri_rest"]["copyrightText"] )
+        hsh_template["description"] = @cfg["esri_rest"]["description"] if (  @cfg["esri_rest"]["description"] )
 	
 	#Set extents..
 	hsh_template["initialExtent"]["spatialReference"]={"wkid"=>(@cfg["esri_rest"]["projection"]).to_i}
