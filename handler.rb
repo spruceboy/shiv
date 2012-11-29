@@ -276,6 +276,10 @@ class TileHandler < RackWelder
             ##
             # Flip... go from jays tile scheme to googles..
             y = 2**z-y-1
+
+	    ##
+	    # deal with negitive x values..
+	    x = (x + 2**z) if (x < 0)
             
             # Call get tile..
             path = @tile_engine.get_tile(x,y,z)
