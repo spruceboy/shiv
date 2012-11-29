@@ -55,6 +55,7 @@ class RmagickTileEngine  < TileEngine
     @watermark_max_x =  @x_size - 2*@watermark_xbuff - @watermark_image.columns
     @watermark_max_y =  @y_size - 2*@watermark_ybuff - @watermark_image.rows
     @watermark_blend = @cfg["watermark"]["blending"]
+    @watermark_chance = @cfg["watermark"]["one_out_of"]
   end
   
   ##
@@ -103,6 +104,18 @@ class RmagickTileEngine  < TileEngine
     watered = img.dissolve(@watermark_image,@watermark_blend, 1.0, @watermark_xbuff+x_fiddle, @watermark_ybuff+y_fiddle )
     img.destroy!
     return watered
+  end
+
+
+  ##
+  # randomly select which to watermark..
+  def water?()
+	# (rand(10)%10==0)
+	if (rand(@watermark_chance)%(@watermark_chance) == 0)
+		puts("Water!")
+		return true
+	end
+	return false
   end
   
   # reduce the number of colors, useful if original dataset has a limited number of colors..
@@ -238,7 +251,7 @@ class RmagickTileEngine  < TileEngine
         if (!File.exists?(path) || true)
           tile = im.crop(ul_x,ul_y, @x_size,@y_size)
           tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
-          tile = watermark(tile) if (@watermark)
+          tile = watermark(tile) if (@watermark && water?() )
           tile.write(path)
           tile.destroy!
         else
