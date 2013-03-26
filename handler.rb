@@ -279,7 +279,7 @@ class TileHandler < RackWelder
 
 	    ##
 	    # deal with negitive x values..
-	    x = (x + 2**z) if (x < 0)
+	    x = (x % (2**z)) if (x < 0)
             
             # Call get tile..
             path = @tile_engine.get_tile(x,y,z)

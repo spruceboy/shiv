@@ -6,7 +6,7 @@ require "http_client_tools"
 require "yaml"
 require "pp"
 
-level = 7
+level = 10
 
 ARGV.each do |cfg|
 	puts("Doing #{cfg}..")

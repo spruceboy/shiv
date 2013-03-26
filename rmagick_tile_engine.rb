@@ -55,6 +55,7 @@ class RmagickTileEngine  < TileEngine
     @watermark_max_x =  @x_size - 2*@watermark_xbuff - @watermark_image.columns
     @watermark_max_y =  @y_size - 2*@watermark_ybuff - @watermark_image.rows
     @watermark_blend = @cfg["watermark"]["blending"]
+    @watermark_chance = @cfg["watermark"]["one_out_of"]
   end
   
   ##
@@ -104,6 +105,18 @@ class RmagickTileEngine  < TileEngine
     img.destroy!
     return watered
   end
+
+
+  ##
+  # randomly select which to watermark..
+  def water?()
+	# (rand(10)%10==0)
+	if (rand(@watermark_chance)%(@watermark_chance) == 0)
+		puts("Water!")
+		return true
+	end
+	return false
+  end
   
   # reduce the number of colors, useful if original dataset has a limited number of colors..
   def color_reduce ( img)
@@ -118,7 +131,8 @@ class RmagickTileEngine  < TileEngine
     @log.msgdebug(@lt+mn + "(#{x},#{y},#{z})")
     
       # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
-      return if ( File.exists?(get_path(x,y,z)))
+      #puts("tile_gen: #{get_path(x,y,z)} -> #{File.size?(get_path(x,y,z))}")
+      return if ( File.size?(get_path(x,y,z)) != nil)
       
       @log.loginfo(@lt+ "tile_gen (#{x},#{y},#{z})..")
     
@@ -235,10 +249,10 @@ class RmagickTileEngine  < TileEngine
       
       #Loop though grid, writting out tiles
       each_tile_ul(x,y,z) do |ul_x, ul_y, path|
-        if (!File.exists?(path) || true)
+        if (true) #(File.size?(path) == nil )
           tile = im.crop(ul_x,ul_y, @x_size,@y_size)
           tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
-          tile = watermark(tile) if (@watermark)
+          tile = watermark(tile) if (@watermark && water?() )
           tile.write(path)
           tile.destroy!
         else

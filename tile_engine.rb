@@ -53,7 +53,8 @@ class TileEngine
   def get_tile (x,y,z)
     path = get_path(x,y,z)
     tile_gen(x,y,z) if (!File.exists?(path))
-    tile_gen(x,y,z) if (File.exists?(path) && File.size?(path) == 0)
+    tile_gen(x,y,z) if (File.exists?(path) && (File.size?(path) == nil))
+    #puts("size of #{path} -> #{File.size?(path)}")
     return path
   end
 
@@ -94,7 +95,7 @@ class TileEngine
   # Fixer/waiter - checks to see if a tile has been generated, if not waits until it shows up..
   def check_and_wait(x,y,z)
       path= get_path(x,y,z)
-      while ( !File.exists?(path) || File.size?(path) == nil )
+      while ( !File.exists?(path) || File.size?(path) == 0 )
         @log.msgdebug("TileEngine:"+"check_and_wait -> waiting on #{x},#{y},#{z}")
         sleep(WAIT_TIME)
       end
@@ -223,7 +224,7 @@ class ExternalTileEngine  < TileEngine
   def make_tiles(x,y,z)
     path = get_path(x,y,z)
     # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
-    return path if ( File.exists?(path))
+    return path if ( File.size?(path) != nil)
     
     command = [@command_path, @cfg["config_path"], @cfg["title"], x.to_s, y.to_s, z.to_s]
     @log.msginfo(@lt+"running -> #{command.join(" ")}")
@@ -251,7 +252,7 @@ class ExternalTileEngine  < TileEngine
     
     path = get_path(x,y,z)
     # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
-    return path if ( File.exists?(path))
+    return path if ( File.size?(path) != nil)
     
     ##
     # Queue up everything around the request, to get maximise data generation. 
