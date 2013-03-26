@@ -131,7 +131,8 @@ class RmagickTileEngine  < TileEngine
     @log.msgdebug(@lt+mn + "(#{x},#{y},#{z})")
     
       # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
-      return if ( File.exists?(get_path(x,y,z)))
+      #puts("tile_gen: #{get_path(x,y,z)} -> #{File.size?(get_path(x,y,z))}")
+      return if ( File.size?(get_path(x,y,z)) != nil)
       
       @log.loginfo(@lt+ "tile_gen (#{x},#{y},#{z})..")
     
@@ -248,7 +249,7 @@ class RmagickTileEngine  < TileEngine
       
       #Loop though grid, writting out tiles
       each_tile_ul(x,y,z) do |ul_x, ul_y, path|
-        if (!File.exists?(path) || true)
+        if (true) #(File.size?(path) == nil )
           tile = im.crop(ul_x,ul_y, @x_size,@y_size)
           tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
           tile = watermark(tile) if (@watermark && water?() )
