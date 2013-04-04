@@ -272,3 +272,50 @@ class ESRI_Service_Fooler < RackWelder
     end
   end
 end
+
+
+# Serves up kml..
+class ESRI_Service_Fooler_Info < RackWelder
+
+  #set stuff up, log=logger, cfg=shiv kml config.
+  def initialize ( log,cfg)
+    @logger = log
+
+    #the ip of the requesting host..
+    @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
+
+    #save the config..
+    @cfg = cfg
+
+    #save the root url.
+    @url_root = @cfg["root_url"]
+  end
+
+
+   # Do something..
+  def process(request, response)
+       begin
+        ##
+        # get start time, for tracking purposes..
+        start_tm = Time.now
+        params = request.params()
+        give_X(response, 200, "text/plain", '{"currentVersion":10.04,"soapUrl":null,"secureSoapUrl":null,"authInfo":{"isTokenBasedSecurity":false}}')
+        return
+    rescue => excpt
+        ###
+        # Ok, something very bad happend here... what to do..
+        send_file_full(@cfg["error"]["img"],request,response,@cfg["error"]["format"])
+
+        stuff = "Broken at #{Time.now.to_s}"
+        stuff += "--------------------------\n"
+        stuff += excpt.to_s + "\n"
+        stuff += "--------------------------\n"
+        stuff += excpt.backtrace.join("\n")
+        stuff += "--------------------------\n"
+        stuff += "request => " + YAML.dump(request)+ "\n-------\n"
+        Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "shiv crash..", [stuff])
+        @logger.logerr("Crash in::#{@lt}" + stuff)
+    end
+  end
+end
+

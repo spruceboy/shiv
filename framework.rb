@@ -62,6 +62,7 @@ class Roundhouse
       ##
       # ESRI TOC serving gadget..
       reg(cfg["http"]["base"] + "/ArcGIS/rest/services", ESRI_Service_Fooler.new(@logger, cfg["esri"]))
+      reg(cfg["http"]["base"] + "/ArcGIS/rest/info", ESRI_Service_Fooler_Info.new(@logger, cfg["esri"]))
       @logger.logstatus("Up.")
     end
     
