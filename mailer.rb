@@ -13,30 +13,27 @@ end
 
 
 
-require "rubygems"
-require 'action_mailer'
+# Gave up on activemailer, now uses https://github.com/mikel/mail
+require "mail"
 
-class Mailer < ActionMailer::Base
-    
-       def message(conf,to, subject, body)
-                ActionMailer::Base.smtp_settings =  conf['setup']
-                 @from = conf['from']
-                 @recipients= to
-                 @subject = subject
-                 @body = body.join("\n")
-        end
+class Mailer 
+       def Mailer.deliver_message(conf,email_to, email_subject, email_body)
+
+		Mail.defaults do
+			delivery_method :smtp, { 
+					:address => conf["setup"][:address],
+        				:domain  => conf["setup"][:domain],
+        		}
+		end
+
+		Mail.deliver do
+   			from    conf['from']
+   			to      email_to
+   			subject email_subject
+   			body    email_body.join("\n")
+		end
+	end
 end
-
-##Use like conf =  {
-#        "setup" => { :address => "dino.gi.alaska.edu",
-#                :domain => "gina.alaska.edu"
-#                },
-#        "to" => "jay@alaska.edu",
-#        "from" => "jay@alaska.edu",
-#        "subject" => "test,test,test"
-#}
-#
-#
 ##p = Mailer.new ( conf, "jay@alaska.edu", "jay@alaska.edu", "test,test,test", ["this is a test.", "this is a test2"])
 #
 #         Mailer.deliver_message(conf, ["this is a test.", "this is a test2"])
