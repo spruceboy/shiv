@@ -400,14 +400,14 @@ class BBoxTileHandler < RackWelder
 end
 
 
-
- 
 ###
 # Handler designed to show how fast a mongrel should go, doing only the basic amount of work to dump a file..
 # Testing only...
  class BenchmarkHandler < RackWelder
    def initialize ( log)
       @logger = log
+      @test_file = '/www/tiles/htdocs/bench/test_file.jpg'
+      @test_file_size = File.size(@test_file)
    end
    
    def process(request, response)
@@ -416,11 +416,32 @@ end
       start_tm = Time.now
       # Log access...
       @logger.log_access(request)
+     
+       size = send_file_full("/www/tiles/htdocs/bench/test_file.jpg",request, response,"image/jpeg")
       
       ##
       # Do request..
-      size = send_file_full("/var/www/html/distro/test_file.jpg", request, response,"image/jpeg")
-      
+      #size = send_file_full("/var/www/html/distro/test_file.jpg", request, response,"image/jpeg")
+	request.env['rack.hijack'].call
+	io = request.env['rack.hijack_io']
+	begin
+	    #io.write("http/1.1 200 ok\r\n")
+	    #io.write("Status: 200\r\n")
+	    #io.write("Connection: close\r\n")
+	    #io.write("Content-Type: image/jpeg\r\n")
+	    #io.write("\r\n")
+	    ["HTTP/1.1 200 OK", "Date: Tue, 12 Nov 2013 21:29:30 GMT","Server: Apache/2.4.6 (Fedora) OpenSSL/1.0.1e-fips mod_fcgid/2.3.7 PHP/5.4.19 mod_perl/2.0.8-dev Perl/v5.16.3",
+		"Content-Type: jpg", "Last-Modified: Tue, 19 Feb 2013 02:22:56 GMT", "Content-Length: 10020"].each do |x|
+		io.write(x)
+		io.write("\r\n")
+	    end
+	    io.write("\r\n")
+	    File.open('/www/tiles/htdocs/bench/test_file.jpg') {|f| io.sendfile(f) }
+	    #io.write(@data)
+	  ensure
+	    #io.flush
+	    io.close
+	end
       #Log xfer..
       @logger.log_xfer(request,response,size, Time.now-start_tm)
    end
