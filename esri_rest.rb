@@ -11,6 +11,7 @@ class ESRIRestTileHandler < RackWelder
 	@tile_engine =  ExternalTileEngine.new(cfg, log)   #Use the external tile engine..
 	@lt = self.class.to_s + ":"
 	@logger.loginfo(@lt+"Starting")
+	@render=RenderEng.new()
     end
    
    def process(request, response)
@@ -45,9 +46,7 @@ class ESRIRestTileHandler < RackWelder
 		give_301(response, get_export_url(params) )
 		return
 	    when nil then
-		give_X(response, 200, "text/plain",
-		       "A more complete  page is forth comming, but meanwhile this service provides \""+
-		      @cfg["esri_rest"]["description"] + "\"" )
+		give_X(response, 200, "text/html",@render.render("esri_mapserver",@cfg))
 		return
 	end
 	    

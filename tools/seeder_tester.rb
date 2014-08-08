@@ -21,14 +21,6 @@ opts = Trollop::options do
   opt :key, "projection (google)", :default => "google"
 end
 
-PATH_FORMAT = "%02d/%03d/%03d/%09d/%09d/%09d_%09d_%09d.%s"
-
-# Returns path to an (x,y,z) set.. 
-def done? (x,y,z, cache_dir, storage_format = "jpg")
-         #puts cache_dir + sprintf(PATH_FORMAT, z,x%128,y%128,x,y,x,y,z,storage_format)
-         File.exists?(cache_dir + sprintf(PATH_FORMAT, z,x%128,y%128,x,y,x,y,z,storage_format))
-end
-
 
 
 
@@ -71,11 +63,8 @@ def do_tile(cfg, x,y,z,waggle, config_path)
 	       j = max if (j > max)
 	       #system("ruby", "tile_grabber.rb", config_path, name, "#{i}", "#{j}", "#{z}")
 	       #puts("Seed: #{config_path} #{i} #{j} #{z}")
-	       @queue.syswrite("#{config_path} #{i} #{j} #{z}\n") 
-		if ( !done?(i,j,z, cfg["cache_dir"]))
-			@queue.syswrite("#{config_path} #{i} #{j} #{z}\n")
-			waffle += 1
-		end
+	       @queue.syswrite("#{config_path} #{i} #{j} #{z}\n")
+	       waffle += 1
 	       if ( waffle%200 == 0)
 		    STDOUT.printf(".")
 		    STDOUT.flush()
@@ -106,10 +95,10 @@ shuffle(towns_conf.keys).each do |town_k|
 	  STDOUT.printf("Doing #{key}|#{town_k}:")
 	  STDOUT.flush()
 	  town = towns_conf[town_k]
-	  pp town
+	  #pp town
 	  tile = get_tile(town[key][0], town[key][1], z, tile_conf )
 	  puts ("#{town_k}  http://tiles.gina.alaska.edu/tiles/#{tile_conf["title"]}/tile/#{tile["x"]}/#{2**z -tile["y"]}/#{z}")
-	  do_tile(tile_conf, tile["x"], tile["y"], z, fiddle, opts[:config])
+	  #do_tile(tile_conf, tile["x"], tile["y"], z, fiddle, opts[:config])
 end
 
 puts("Done.")

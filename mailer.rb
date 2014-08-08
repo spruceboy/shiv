@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require "tempfile"
 
 class JMailer
     
@@ -14,27 +15,22 @@ end
 
 
 # Gave up on activemailer, now uses https://github.com/mikel/mail
+# Gave up on mail, now just using mailx.  Sigh.
 require "mail"
 
 class Mailer 
-       def Mailer.deliver_message(conf,email_to, email_subject, email_body)
-
-		Mail.defaults do
-			delivery_method :smtp, { 
-					:address => conf["setup"][:address],
-        				:domain  => conf["setup"][:domain],
-        		}
-		end
-
-		Mail.deliver do
-   			from    conf['from']
-   			to      email_to
-   			subject email_subject
-   			body    email_body.join("\n")
-		end
-	end
+  def Mailer.deliver_message(conf,email_to, email_subject, email_body)
+    msg = Tempfile.new("tiler_error_msg")
+    msg.write(email_body.join("\n"))
+    msg.flush
+    msg.close
+    system("mailx -s \"#{email_subject}\" -r \"#{conf['from']}\" \"#{email_to}\" < #{msg.path}")
+    msg.unlink
+  end
 end
-##p = Mailer.new ( conf, "jay@alaska.edu", "jay@alaska.edu", "test,test,test", ["this is a test.", "this is a test2"])
-#
-#         Mailer.deliver_message(conf, ["this is a test.", "this is a test2"])
+
+
+#require "yaml"
+#conf = File.open("shiv.yml") {|fd| YAML.load(fd)}["tile_engines"]["mailer_config"]
+#Mailer.deliver_message(conf, "jay@alaska.edu", "test,test,test", ["this is a test.", "this is a test2"])
 

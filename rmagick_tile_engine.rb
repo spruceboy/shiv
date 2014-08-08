@@ -20,7 +20,8 @@ class RmagickTileEngine  < TileEngine
     
     ##
     # downloader..
-    @downloader = SimpleHttpClient.new
+    ##@downloader = SimpleHttpClient.new
+    @downloader = SimpleCurlHttpClient.new
     
     ##
     # record class name for later debug messages
@@ -112,7 +113,7 @@ class RmagickTileEngine  < TileEngine
   def water?()
 	# (rand(10)%10==0)
 	if (rand(@watermark_chance)%(@watermark_chance) == 0)
-		puts("Water!")
+		#puts("Water!")
 		return true
 	end
 	return false
@@ -256,10 +257,12 @@ class RmagickTileEngine  < TileEngine
           tile.write(path)
           tile.destroy!
         else
+	  im.destroy!
           @log.msgerror(@lt+mn + "should not have found #{x}/#{y}/#{z}")
           raise "dup tile found for #{x}/#{y}/#{z} - whats the deal jay, fix me!"
         end
       end
+      im.destroy!
       @locker.release_lock(x,y,z) # Release that lock!
     rescue
       @locker.release_lock(x,y,z) # Release that lock! -> verything has gone bonkers, so bail..

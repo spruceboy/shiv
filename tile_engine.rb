@@ -47,6 +47,10 @@ class TileEngine
     
   end
   
+  def get_cfg()
+    @cfg
+  end
+  
   
   ##
   # Returns the path to a tile
@@ -217,7 +221,7 @@ class ExternalTileEngine  < TileEngine
     
     @command_path = File.dirname(__FILE__) + "/external_tiler"
     
-    @@idler = Idler.new(1) if ( ! @@idler )   #Only create an idler if a instance is instaicated. My spelling sucks.  So does my coding.
+    @@idler = Idler.new(1, cfg["idler"]) if ( ! @@idler )   #Only create an idler if a instance is instaicated. My spelling sucks.  So does my coding.
   end
   
   
@@ -256,7 +260,7 @@ class ExternalTileEngine  < TileEngine
     
     ##
     # Queue up everything around the request, to get maximise data generation. 
-    (-1).upto(1) {|dx| (-1).upto(1) {|dy| @@idler.add(self, x+dx*@cfg["tiles"]["x_count"],y+dy*@cfg["tiles"]["y_count"],z) if (!(dy == 0 && dx == 0)) }}
+    (-2).upto(2) {|dx| (-2).upto(2) {|dy| @@idler.add(self, x+dx*@cfg["tiles"]["x_count"],y+dy*@cfg["tiles"]["y_count"],z) if (!(dy == 0 && dx == 0)) }}
     
     make_tiles(x,y,z)
     

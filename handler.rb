@@ -39,63 +39,10 @@ class RackWelder
     
 	##
 	# Sends out a file on disk - switchs between actual file sending and handoff file sending, depending on usage.
-	def send_file_full(req_path, request, response,mime_type="image/png", header_only=false )
-	    return send_file_xsendfile(request, response,req_path, mime_type)
-	end
+    def send_file_full(req_path, request, response,mime_type="image/png", header_only=false )
+	return send_file_xsendfile(request, response,req_path, mime_type)
+    end
     
-      ##
-      # Taken from dir handler of mongrel, adapted to rack suitiblity.
-      # Does not work right now - the Rack::File.new(req_path) logic is screwy
-      #
-      #  FIXME!!!
-      #
-      def send_file_full_rack(req_path, request, response,type="png", header_only=false)
-	 stat = File.stat(req_path)
-
-         # Set the last modified times as well and etag for all files
-	 mtime = stat.mtime
-         # Calculated the same as apache, not sure how well the works on win32
-	 etag = ETAG_FORMAT % [mtime.to_i, stat.size, stat.ino]
-
-         modified_since = request.env[HTTP_IF_MODIFIED_SINCE]
-	 none_match = request.env[HTTP_IF_NONE_MATCH]
-
-         # test to see if this is a conditional request, and test if
-	 # the response would be identical to the last response
-         same_response = case
-                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil then false
-                      when modified_since && last_response_time > Time.now                                  then false
-                      when modified_since && mtime > last_response_time                                     then false
-                      when none_match     && none_match == '*'                                              then false
-                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              then false
-                      else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
-                      end
-
-	 header = response.header
-         header[ETAG] = etag
-
-	 if same_response
-	    response.status = 304
-	 else
-
-	    # First we setup the headers and status then we do a very fast send on the socket directly
-
-            # Support custom responses except 404, which is the default. A little awkward. 
-	    response.status = 200 if response.status == 404
-	    header[LAST_MODIFIED] = mtime.httpdate
-   
-	    header[CONTENT_TYPE] = type
-
-   	    # send a status with out content length
-   	    #response.send_status(stat.size)
-	    #response.send_header
-	    #response.send_file(req_path, stat.size < 16*1024 * 2)
-	    response.body = Rack::File.new(req_path)
-	    return stat.size
-	 end
-      end
-      
-      
     ###
     # General purpose out to http function..
     def give_X(response, status, mime_type, msg)
@@ -120,52 +67,25 @@ class RackWelder
 	give_X(response, 404, "plain/text", msg)
     end
     
-    ###
-    # Only tested with apache - not sure what lighttp /fooxxx http does
-    # todo -> 
-    def send_file_xsendfile(request, response,path, mime_type)
-	
-	#Calculate etag, not sure if needed, perhaps apache does this already
-	stat = File.stat(path)
-        # Set the last modified times as well and etag for all files
-	mtime = stat.mtime
-        # Calculated the same as apache, not sure how well the works on win32
-	etag = ETAG_FORMAT % [mtime.to_i, stat.size, stat.ino]
-
-        modified_since = request.env[HTTP_IF_MODIFIED_SINCE]
-	none_match = request.env[HTTP_IF_NONE_MATCH]
-
-         # test to see if this is a conditional request, and test if
-	 # the response would be identical to the last response
-	 # Not sure whats going on here - stole from mongrels dir handler, which probibly does everything correctly..
-        same_response = case
-                      when modified_since && !last_response_time = Time.httpdate(modified_since) rescue nil then false
-                      when modified_since && last_response_time > Time.now                                  then false
-                      when modified_since && mtime > last_response_time                                     then false
-                      when none_match     && none_match == '*'                                              then false
-                      when none_match     && !none_match.strip.split(/\s*,\s*/).include?(etag)              then false
-                      else modified_since || none_match  # validation successful if we get this far and at least one of the header exists
-                      end
-
-	if same_response
-	    response.status = 304
-	else
-	    #Status?
-	    response.header[ETAG] = etag
-	    response.header["X-Sendfile"] = path
-	    response.headers[CONTENT_TYPE] = mime_type
-	    response.headers[CONTENT_LENGTH] = "0"
-	end
-	 
-	response.body = []
-	
-	return stat.size
+    def send_file_full(req_path, request, response,mime_type="image/png", header_only=false )
+	return send_file_xsendfile(request, response,req_path, mime_type)
     end
     
+    def send_file_xsendfile(request, response,path, mime_type)
+        response.body = ShivFile.new(path)
+        response.headers[CONTENT_TYPE] = mime_type
+    end
+end
+
+
+class ShivFile
+    def initialize (path)
+	@path = path
+    end
     
-    ##
-    # Helper to give access to parms..
-    
+    def to_path
+	@path
+    end
 end
 
 
@@ -400,45 +320,23 @@ class BBoxTileHandler < RackWelder
 end
 
 
-
- 
 ###
 # Handler designed to show how fast a mongrel should go, doing only the basic amount of work to dump a file..
-# Testing only...
+# Testing only... image path should be configureable. 
  class BenchmarkHandler < RackWelder
    def initialize ( log)
       @logger = log
+      @test_file = '/www/tiles/htdocs/bench/test_file.jpg'
+      @test_file_size = File.size(@test_file)
    end
    
    def process(request, response)
-      
       @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
       start_tm = Time.now
       # Log access...
       @logger.log_access(request)
-      
-      ##
-      # Do request..
-      size = send_file_full("/var/www/html/distro/test_file.jpg", request, response,"image/jpeg")
-      
-      #Log xfer..
-      @logger.log_xfer(request,response,size, Time.now-start_tm)
+       size = send_file_full(@test_file,request, response,"image/jpeg")
    end
- 
    private
       
  end
-#For rack..
-class BenchmarkHandlerRack < RackWelder
-    def initialize ( )
-	#djlsakjflaj
-    end
-    def process(request, response)
-      #request["PATH_INFO"] = "test_file.jpg"
-      #response.status = 200
-      response.body = []
-      response.header["X-Sendfile"] = "/var/www/html/distro/test_file.jpg"
-      response.headers[CONTENT_TYPE] = "image/jpeg"
-      response.headers[CONTENT_LENGTH] = "0"#File.size?("test_file.jpg").to_s
-    end
-end

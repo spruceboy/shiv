@@ -38,7 +38,6 @@ class Lumber
         return if (@quiet)
         return if (!@verbose)
         format_for_output(@info_fd, "INFO", s)
-        format_for_output(STDOUT, "INFO", s)
     end
     
     def loginfo(s)
@@ -54,7 +53,8 @@ class Lumber
     
     def msgstatus( s)
         return if ( !@verbose || @quiet)
-        format_for_output(STDOUT, "STATUS", s)
+        #format_for_output(STDOUT, "STATUS", s)
+        format_for_output(@info_fd, "INFO", s)
     end
     
     def logstatus(s)

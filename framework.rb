@@ -8,6 +8,7 @@ require "pp"
 ########################
 # Very small framework for shiv, only
 # this was the starting point: http://theexciter.com/files/cabinet.rb.txt , but only a rough one
+# Predates the better "map" stuff in Rack.
 
 ## Error generating stub class... silly
 class HttpError < RackWelder
@@ -63,6 +64,9 @@ class Roundhouse
       # ESRI TOC serving gadget..
       reg(cfg["http"]["base"] + "/ArcGIS/rest/services", ESRI_Service_Fooler.new(@logger, cfg["esri"]))
       reg(cfg["http"]["base"] + "/ArcGIS/rest/info", ESRI_Service_Fooler_Info.new(@logger, cfg["esri"]))
+      
+      reg(cfg["http"]["base"] + "/", ControlPanel.new(@logger, cfg,configs_as_list(cfg)))
+      
       @logger.logstatus("Up.")
     end
     
@@ -106,12 +110,28 @@ class Roundhouse
     ##
     # Loops though config dir, setting up each config..
     def configs(cfg)
-       Dir.glob(cfg["tile_engines"]["conf_dir"] + "/*.conf.yml").each do |item|
+       conf_list(cfg).each do |item|
 	 engine_cfg = File.open(item){|fd| YAML.load(fd)}
 	 engine_cfg["mailer_config"] = cfg["tile_engines"]["mailer_config"]
+	 engine_cfg["idler"] = cfg["idler"]
 	 engine_cfg["config_path"]=item
 	 yield engine_cfg
        end
+    end
+    
+    
+    ##
+    # gets a list of config files..
+    def conf_list(cfg)
+	return Dir.glob(cfg["tile_engines"]["conf_dir"] + "/*.conf.yml")
+    end
+    
+    ##
+    # 
+    def configs_as_list(cfg)
+      list=[]
+      configs(cfg) {|tcfg| list << tcfg }
+      list
     end
     
 end
