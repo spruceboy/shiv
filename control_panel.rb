@@ -90,7 +90,12 @@ class ControlPanel < ControlPanelBase
 	puts path.join(":")
 	case path.first
 	    when nil;give_X(response, 200, "text/html",@render.render("index", @list, "index_layout") )
-	    when "info";give_X(response, 200, "text/html",@render.render("info", get_tile_config(path[1])))
+	    when "info";
+		if ( path[1] == nil )
+			give_X(response, 404, "text/html","Bad URL.")
+		else
+			give_X(response, 200, "text/html",@render.render("info", get_tile_config(path[1])))
+		end
 	    when "map";give_X(response, 200, "text/html",@render.render("map", get_tile_config(path[1]), get_tile_layout(path[1])))
 	    else error_msg(response, "Got nothing..")
 	end

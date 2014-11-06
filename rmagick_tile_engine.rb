@@ -27,7 +27,7 @@ class RmagickTileEngine  < TileEngine
     # record class name for later debug messages
     @lt = self.class.to_s + ":"
     
-    @locker = TileLockerFile.new(@log)
+    @locker = TileLockerFile.new(@log, cfg["title"])
     
     setup_labels()
     setup_watermarking()
@@ -162,10 +162,7 @@ class RmagickTileEngine  < TileEngine
     mn = "fetch_single_tile:"
     @log.msgdebug(@lt+mn + "(#{x},#{y},#{z})")
     begin
-      if ( @locker.check_and_wait(x,y,z)) #Returns when ok to start fetching tiles, true if fetch was done durring waiting..
-        @locker.release_lock(x,y,z)
-        return
-      end
+      return if ( @locker.check_and_wait(x,y,z)) #Returns when ok to start fetching tiles, true if fetch was done durring waiting..
       
       # Local file to write data too
       i = get_tempfile()
@@ -180,7 +177,12 @@ class RmagickTileEngine  < TileEngine
       @log.loginfo(@lt+mn + "(#{url})")
       
       #fetch and load the image
-      im = Magick::Image::from_blob(@downloader.easy_body(url)).first
+      begin
+        im = Magick::Image::from_blob(@downloader.easy_body(url)).first
+      rescue Magick::ImageMagickError, Magick::FatalImageMagickError => e
+        raise "Error with image returned from WMS -> \"#{e.to_s}\" for url \"#{url}\""
+      end
+
       
       #Is the image returned good?
       raise("No img returned for #{url} -> something serously wrong - WMS is probibly broken..") if ( !im )
@@ -201,10 +203,8 @@ class RmagickTileEngine  < TileEngine
       #save the image, and do format conversion if needed..
       im.write(get_path(x,y,z))
       im.destroy!
+    ensure 
       @locker.release_lock(x,y,z) # Release that lock!
-    rescue
-      @locker.release_lock(x,y,z) # Release that lock! -> verything has gone bonkers, so bail..
-      raise
     end
   end
   
@@ -220,11 +220,7 @@ class RmagickTileEngine  < TileEngine
 
     begin
       @log.msgdebug(@lt+mn + ":Locking for #{x},#{y},#{z}")
-      if ( @locker.check_and_wait(x,y,z)) #Returns when ok to start fetching tiles, true if fetch was done durring waiting..
-        # If we are here, then the lock released and the tile is already generated - return!
-        @locker.release_lock(x,y,z)
-        return
-      end
+      return if ( @locker.check_and_wait(x,y,z)) #Returns when ok to start fetching tiles, true if fetch was done durring waiting..
       
       # Temp file for temp local storage of image..
       t = get_tempfile() 
@@ -238,7 +234,11 @@ class RmagickTileEngine  < TileEngine
       
       #Download to tmp file..
       #@downloader.easy_download(url, t.path)
-      im = Magick::Image::from_blob(@downloader.easy_body(url)).first
+      begin
+      	im = Magick::Image::from_blob(@downloader.easy_body(url)).first
+      rescue Magick::ImageMagickError, Magick::FatalImageMagickError => e
+	raise "Error with image returned from WMS -> \"#{e.to_s}\" for url \"#{url}\""
+      end
       
       raise "No img returned for #{url} -> something serously wrong. Mostly likely the image fetched is not a image (broken server)." if (!im)
       
@@ -263,10 +263,10 @@ class RmagickTileEngine  < TileEngine
         end
       end
       im.destroy!
-      @locker.release_lock(x,y,z) # Release that lock!
     rescue
-      @locker.release_lock(x,y,z) # Release that lock! -> verything has gone bonkers, so bail..
       raise
+    ensure
+      @locker.release_lock(x,y,z)
     end
   end
 end

@@ -45,12 +45,21 @@ class Roundhouse
       
       #loop though the tile engines in the config file, and fire up and mount each..
       configs(cfg) do |tcfg|
+         #tile json
+         path = cfg["http"]["base"] + "/" + tcfg["title"] + "/tile.json"
+         @logger.msginfo("Main:Setting up tile json at  '#{path}''")
+         reg(path, TileJson.new(tcfg, @logger, cfg["http"]))
+       
+	 #tile handler
          path = cfg["http"]["base"] + "/" + tcfg["title"] + "/tile/"
          @logger.msginfo("Main:Setting up '#{path}''")
          reg(path, TileHandler.new(tcfg, @logger, cfg["http"]))
+	
+	 #bbox handler
          path = cfg["http"]["base"] + "/" + tcfg["title"] + "/bbox/"
          @logger.msginfo("Main:Setting up '#{path}''")
          reg(path, BBoxTileHandler.new(tcfg, @logger, cfg["http"]))
+
          path = cfg["http"]["base"] + "/ArcGIS/rest/services/" + tcfg["title"] + "/MapServer/"
          @logger.msginfo("Main:Setting up '#{path}''")
          reg(path, ESRIRestTileHandler.new(tcfg, @logger, cfg["http"]))

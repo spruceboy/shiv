@@ -6,6 +6,7 @@
 # provides a way to mail errors etc..
 require "mailer"
 require "cgi"
+require "time"
 
 #************************************************************************************************
 
@@ -74,6 +75,7 @@ class RackWelder
     def send_file_xsendfile(request, response,path, mime_type)
         response.body = ShivFile.new(path)
         response.headers[CONTENT_TYPE] = mime_type
+	#response.headers["Expires"] = (Time.now+10*60).httpdate
     end
 end
 
@@ -85,6 +87,10 @@ class ShivFile
     
     def to_path
 	@path
+    end
+
+    def each 
+	#do nothing.
     end
 end
 
@@ -326,7 +332,7 @@ end
  class BenchmarkHandler < RackWelder
    def initialize ( log)
       @logger = log
-      @test_file = '/www/tiles/htdocs/bench/test_file.jpg'
+      @test_file = '/hub/cache/test/test_file.jpg'
       @test_file_size = File.size(@test_file)
    end
    
@@ -340,3 +346,77 @@ end
    private
       
  end
+
+# tile json widget..
+class TileJson < RackWelder
+
+  require "json"
+  #set stuff up, log=logger, cfg=shiv kml config.
+  def initialize (cfg, log,http_conf)
+    @logger = log
+
+    #the ip of the requesting host..
+    @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
+
+    #save the config..
+    @cfg = cfg
+  end
+
+
+   # Do something..
+  def process(request, response)
+    begin
+	params = request.params()
+
+	if (params["callback"])
+		give_X(response, 200, "text/plain", params["callback"] + "(" + get_tile_json + ");")
+	else
+        	give_X(response, 200, "text/plain", get_tile_json())
+	end
+
+        return
+    rescue => excpt
+        ###
+        # Ok, something very bad happend here... what to do..
+        give_X(response, 500, "text/plain", "Something is broken, this is bad. Email support@gina.alaska.edu if problems continue.")
+
+        stuff = "Broken at #{Time.now.to_s}"
+        stuff += "--------------------------\n"
+        stuff += excpt.to_s + "\n"
+        stuff += "--------------------------\n"
+        stuff += excpt.backtrace.join("\n")
+        stuff += "--------------------------\n"
+        stuff += "request => " + YAML.dump(request)+ "\n-------\n"
+        Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "shiv crash..", [stuff])
+        @logger.logerr("Crash in::#{@lt}" + stuff)
+    end
+  end
+
+
+  def get_tile_json ()
+	resp = {
+    		"tilejson"=> "2.1.0",
+    		"name"=> @cfg["title"],
+    		"description"=> "TBD.",
+    		"attribution"=> "TBD.",
+    		"scheme"=> "xyz",
+
+    		"tiles"=> [
+        		"/tiles/#{@cfg["title"]}/tile/{x}/{y}/{z}"
+    		],
+    		"minzoom"=> 0,
+    		"maxzoom"=> 22,
+	}
+
+	
+	##
+	# Should expand this a bit, put info in a "combined location"
+	if ( @cfg["esri_rest"] )
+		resp["description"] = @cfg["esri_rest"]["description"] if ( @cfg["esri_rest"]["description"] )
+		resp["attribution"] = @cfg["esri_rest"]["copyrightText"] if (  @cfg["esri_rest"]["copyrightText"] )
+	end
+
+	return (resp.to_json)
+  end
+
+end

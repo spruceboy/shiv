@@ -27,6 +27,7 @@ class TileEngine
   #local cache path..
   PATH_FORMAT = "%02d/%03d/%03d/%09d/%09d/%09d_%09d_%09d.%s"
   WAIT_TIME = 0.5
+  MAX_WAIT_TIME = 120
   
   def initialize (cfg, logger)
     @cfg = cfg
@@ -98,9 +99,12 @@ class TileEngine
   ###
   # Fixer/waiter - checks to see if a tile has been generated, if not waits until it shows up..
   def check_and_wait(x,y,z)
+      counter = (MAX_WAIT_TIME/WAIT_TIME).to_i
       path= get_path(x,y,z)
       while ( !File.exists?(path) || File.size?(path) == 0 )
-        @log.msgdebug("TileEngine:"+"check_and_wait -> waiting on #{x},#{y},#{z}")
+        @log.msgdebug("TileEngine:"+"check_and_wait -> waiting on #{x},#{y},#{z} t#{counter}(#{@cfg["title"]})")
+	counter = counter - 1
+	raise "timed out while waiting for waiting on #{@cfg["title"]}(#{x},#{y},#{z})" if (counter < 0 ) 
         sleep(WAIT_TIME)
       end
   end
@@ -285,11 +289,13 @@ class TileLocker
   # This function is used to control requests, if a request is in progress, it waits until the request is finished, then returns true, with the lock not set/altered.
   # If a request is not in progress, it returns false and sets the lock.
   def check_and_wait (x,y,z)
+    counter = 0
     busy = false
     while ( !check_lock(x,y,z))
-      @log.msgdebug(@lt+"check_and_wait -> waiting on #{x},#{y},#{z}")
+      @log.msgdebug(@lt+"check_and_wait -> waiting on #{x},#{y},#{z} (#{counter})")
       sleep(@wait)
       busy = true
+      counter += 1
     end
     
     release_lock(x,y,z) if (busy)  # Release lock, and data has allready been generated..
@@ -322,7 +328,8 @@ end
 
 class TileLockerFile
   WAIT_TIME= (60*3)
-  def initialize (log)
+  def initialize (log, title="default")
+    @title = title
     @log = log
     @lock_dir = "./locks/"
     @wait = 0.3
@@ -370,7 +377,7 @@ class TileLockerFile
   
   
   def getpath(x,y,z)
-    return("#{@lock_dir}#{x}_#{y}_#{z}")
+    return("#{@lock_dir}#{@title}_#{x}_#{y}_#{z}")
   end
   
   def locked(x,y,z)

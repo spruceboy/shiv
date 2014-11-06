@@ -10,6 +10,8 @@
 class Idler
   def initialize(n, fifo_path)
     @MAX_QUEUE=3000    #should be configureable.
+    
+    system("rm", "-v", fifo_path) if (File.exists?(fifo_path))
     system("mkfifo", fifo_path)
     @fifo = File.open(fifo_path, "w+")
     
@@ -26,6 +28,7 @@ class Idler
             if (item)
               #puts("#{self.class.to_s}: doing #{item["x"]}, #{item["y"]}, #{item["z"]}")
               @fifo.syswrite("#{item["path"]} #{item["x"]} #{item["y"]} #{item["z"]}\n")
+	      @fifo.flush
             else
               #puts("#{self.class.to_s}: Sleeping, nothing to do.")
               sleep(10)

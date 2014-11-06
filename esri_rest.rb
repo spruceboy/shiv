@@ -252,7 +252,8 @@ class ESRI_Service_Fooler < RackWelder
 	# get start time, for tracking purposes..
 	start_tm = Time.now
 	params = request.params()
-        give_X(response, 200, "text/plain", "Something is coming to this page soon.")
+	response.headers["Location"] = "/tiles/"
+        give_X(response, 302, "text/plain", "Redirect to /tiles/ for a toc.")
 	return
     rescue => excpt
         ###

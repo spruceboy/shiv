@@ -1,0 +1,46 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    curb (0.8.6)
+    daemons (1.1.9)
+    dalli (2.7.2)
+    escape_utils (1.0.1)
+    fastthread (1.0.7)
+    haml (4.0.5)
+      tilt
+    highline (1.6.21)
+    json (1.8.1)
+    json_pure (1.8.1)
+    mail (2.6.1)
+      mime-types (>= 1.16, < 3)
+    mime-types (2.3)
+    puma (2.9.0)
+      rack (>= 1.1, < 2.0)
+    rack (1.5.2)
+    rack-cache (1.2)
+      rack (>= 0.4)
+    rake (10.3.2)
+    rmagick (2.13.3)
+    tilt (2.0.1)
+    xml-simple (1.1.4)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  curb
+  daemons
+  dalli
+  escape_utils
+  fastthread
+  haml
+  highline
+  json
+  json_pure
+  mail
+  puma
+  rack
+  rack-cache
+  rake
+  rmagick (~> 2.13.3)
+  xml-simple
