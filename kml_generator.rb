@@ -69,7 +69,7 @@ class KMLHandler < RackWelder
         
         response.status = 200
         response.header["Content-Type"] = "application/vnd.google-earth.kml+xml"
-        @logger.msgdebug("KMLHandler:process:"+ sprintf("(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f))
+        #@logger.msgdebug("KMLHandler:process:"+ sprintf("(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f))
         stuff = do_level(@cfg,set,tl_x.to_f, tl_y.to_f, br_x.to_f, br_y.to_f)
         response.write(stuff)
       end
@@ -92,13 +92,13 @@ class KMLHandler < RackWelder
   
   #generates a url to the new down level 
   def url_to_lower_level(hcfg,set,tl_x, tl_y, br_x, br_y)
-    @logger.msgdebug("KMLHandler:url_to_lower_level:"+sprintf("url_to_lower_level(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f) )
+    #@logger.msgdebug("KMLHandler:url_to_lower_level:"+sprintf("url_to_lower_level(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f) )
     return sprintf(hcfg["url"],set,tl_x, tl_y, br_x, br_y)
   end
 
   #url to actual image..
   def url_to_img(hcfg,set,tl_x, tl_y, br_x, br_y)
-    @logger.msgdebug("KMLHandler:url_to_img:"+ sprintf("url_to_lower_level(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f) )
+    #@logger.msgdebug("KMLHandler:url_to_img:"+ sprintf("url_to_lower_level(%g,%g) -> (%g,%g)", br_x.to_f, br_y.to_f, tl_x.to_f , tl_y.to_f) )
     return sprintf(hcfg["source"],tl_x, br_y, br_x, tl_y) + ".png"
   end
   
@@ -107,7 +107,7 @@ class KMLHandler < RackWelder
   
   def hshtoLatLonAltBox ( cfg,set,tl_x, tl_y, br_x, br_y , note)
     maxlodpixels = -1
-    @logger.msgdebug("KMLHandler:hshtoLatLonAltBox:" + sprintf("((br_x - tl_x))=>%g (%s)",(br_x - tl_x), note ))
+    #@logger.msgdebug("KMLHandler:hshtoLatLonAltBox:" + sprintf("((br_x - tl_x))=>%g (%s)",(br_x - tl_x), note ))
     
     #Old Lod
     #  "Lod"=>[ {"maxLodPixels"=>["#{maxlodpixels}"], "minLodPixels"=>["128"],  "minFadeExtent"=>["128"],  "maxFadeExtent"=>["128"]}],
