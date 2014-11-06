@@ -7,9 +7,10 @@ send_map = Proc.new do |x|
 	return "X-Sendfile"
 end
 
-use Rack::Sendfile,
-	:variation => "X-Sendfile",
-	:mapping => nil
+#use Rack::Sendfile,
+#	:variation => "X-Sendfile",
+#	:mapping => nil
+use Rack::Sendfile
 use Rack::CommonLogger
 
 
