@@ -11,9 +11,9 @@ GEM
     highline (1.6.21)
     json (1.8.1)
     json_pure (1.8.1)
-    mail (2.6.1)
+    mail (2.6.3)
       mime-types (>= 1.16, < 3)
-    mime-types (2.3)
+    mime-types (2.4.3)
     puma (2.9.0)
       rack (>= 1.1, < 2.0)
     rack (1.5.2)
@@ -38,7 +38,7 @@ DEPENDENCIES
   json
   json_pure
   mail
-  puma
+  puma (= 2.9.0)
   rack
   rack-cache
   rake
