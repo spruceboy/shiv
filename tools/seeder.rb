@@ -74,6 +74,7 @@ def do_tile(cfg, x,y,z,waggle, config_path)
 	       @queue.syswrite("#{config_path} #{i} #{j} #{z}\n") 
 		if ( !done?(i,j,z, cfg["cache_dir"]))
 			@queue.syswrite("#{config_path} #{i} #{j} #{z}\n")
+			@queue.flush
 			waffle += 1
 		end
 	       if ( waffle%200 == 0)
@@ -108,7 +109,7 @@ shuffle(towns_conf.keys).each do |town_k|
 	  town = towns_conf[town_k]
 	  pp town
 	  tile = get_tile(town[key][0], town[key][1], z, tile_conf )
-	  puts ("#{town_k}  http://tiles.gina.alaska.edu/tiles/#{tile_conf["title"]}/tile/#{tile["x"]}/#{2**z -tile["y"]}/#{z}")
+	  puts ("#{town_k}  http://tiles.gina.alaska.edu/tiles/#{tile_conf["title"]}/tile/#{tile["x"]}/#{2**z -tile["y"]}/#{z}  http://tiles.gina.alaska.edu/tiles/#{tile_conf["title"]}/tile/#{tile["x"]/8}/#{2**(z-3) -tile["y"]/8}/#{z-3}")
 	  do_tile(tile_conf, tile["x"], tile["y"], z, fiddle, opts[:config])
 end
 

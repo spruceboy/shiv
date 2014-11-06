@@ -7,9 +7,9 @@ require "yaml"
 require "pp"
 
 
-queue = File.open("idler_6", "w")
+queue = File.open("idler_seeder2", "w")
 
-level = 10
+level = 12
 
 PATH_FORMAT = "%02d/%03d/%03d/%09d/%09d/%09d_%09d_%09d.%s"
 
