@@ -22,6 +22,7 @@ GEM
     rake (10.3.2)
     rmagick (2.13.3)
     tilt (2.0.1)
+    trollop (2.0)
     xml-simple (1.1.4)
 
 PLATFORMS
@@ -43,4 +44,5 @@ DEPENDENCIES
   rack-cache
   rake
   rmagick (~> 2.13.3)
+  trollop
   xml-simple
