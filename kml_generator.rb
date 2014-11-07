@@ -46,7 +46,7 @@ class KMLHandler < RackWelder
           return
         end
         
-        1.upto(6) {|x| puts "#{x*(-1)} #{uri[x*(-1)]}"}
+        #1.upto(6) {|x| puts "#{x*(-1)} #{uri[x*(-1)]}"}
         
         set = uri[-6]
         tl_x = uri[-4].to_f
