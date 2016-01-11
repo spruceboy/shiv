@@ -110,6 +110,10 @@ class Roundhouse
 	 engine_cfg = File.open(item){|fd| YAML.load(fd)}
 	 engine_cfg["mailer_config"] = cfg["tile_engines"]["mailer_config"]
 	 engine_cfg["config_path"]=item
+		#load esri config stuff..
+	 if (engine_cfg["esri_config"])
+		 engine_cfg["esri"] = File.open(File.dirname(item)+"/" + engine_cfg["esri_config"]) {|fd| XmlSimple.xml_in(fd.read) }
+	 end
 	 yield engine_cfg
        end
     end

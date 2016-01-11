@@ -4,6 +4,8 @@ require "rubygems"
 require "tempfile"
 require "thread"
 require "http_client_tools"
+require "storage_engine"
+require "tile_mapper"
 
 ###
 # Notes
@@ -44,7 +46,37 @@ class TileEngine
     #to Debug or not to Debug
     # debug flag
     @tile_debug = cfg["debug"] if (cfg["debug"])
+
+    #deside which tile storage backend
+    if (cfg["mode"] && cfg["mode"] == "esri")
+	@storage_backend = ESRIStorageEngine.new(cfg, logger)
+	@tile_mapper = ESRIXYZMapper.new(cfg, logger)
+    else
+	@storage_backend = StorageEngine.new(cfg, logger)
+	@tile_mapper = XYZMapper.new(cfg, logger)
+    end
     
+  end
+
+
+  ##
+  # max x for y
+  def max_x(z)
+	@tile_mapper.max_x(z)
+  end
+
+  ##
+  # max y for z
+  def max_y(z)
+        @tile_mapper.max_y(z)
+  end
+
+
+
+  ##
+  # check that x,y,z are valid. 
+  def valid?(x,y,z)
+	@tile_mapper.valid?(x,y,z)
   end
   
   
@@ -70,24 +102,7 @@ class TileEngine
   # takes a bbox, returns the tile that it repersents..
   # Todo: Handle case where things to not match..
   def min_max_to_xyz(min_x,min_y, max_x,max_y)
-    @log.loginfo("TileEngine:min_max_to_xyz (#{min_x},#{min_y},#{max_x}, #{max_y})..")
-    dx = max_x - min_x
-    dy = max_y - min_y
-    
-    zx = Math.log( (@cfg["base_extents"]["xmax"] - @cfg["base_extents"]["xmin"])/ dx) / Math.log(2)
-    zy = Math.log( (@cfg["base_extents"]["ymax"] - @cfg["base_extents"]["ymin"])/ dy) / Math.log(2)
-    
-    x = (min_x - @cfg["base_extents"]["xmin"])/dx
-    y = (min_y - @cfg["base_extents"]["ymin"])/dy 
-    
-    x = x.to_i 
-    y = y.to_i 
-    
-    
-    @log.msgdebug("TileEngine:min_max_to_xyz:zlevels.. (#{zx},#{zy})..")
-    
-    @log.msgdebug("TileEngine:min_max_to_xyz:results (#{x},#{y},#{zx})..")
-    return x,y,zx.to_i
+	 @tile_mapper.min_max_to_xyz(min_x,min_y, max_x,max_y)
   end
   
   
@@ -106,8 +121,21 @@ class TileEngine
   ##
   # Returns path to an (x,y,z) set.. 
   def get_path (x,y,z)
-    return @cfg["cache_dir"] + sprintf(PATH_FORMAT, z,x%128,y%128,x,y,x,y,z,@storage_format)
+    @storage_backend.get_path(x,y,z)
   end
+
+
+  ##
+  # Takes a x,y,z, return the tiles bounding box
+
+  def x_y_z_to_map_x_y( x,y,z)
+        @tile_mapper.x_y_z_to_map_x_y( x,y,z)
+  end
+
+  def x_y_z_to_map_x_y_enlarged(x,y,z,x_count,y_count)
+         @tile_mapper.x_y_z_to_map_x_y_enlarged(x,y,z,x_count,y_count)
+  end
+
   
   private
   
@@ -136,39 +164,21 @@ class TileEngine
       exit(-1)
   end
   
-  ##
-  # Takes a x,y,z, return the tiles bounding box
-  
-  def x_y_z_to_map_x_y ( x,y,z)
-    w_x = (@cfg["base_extents"]["xmax"] - @cfg["base_extents"]["xmin"])/(2.0 **(z.to_f))
-    w_y = (@cfg["base_extents"]["ymax"] - @cfg["base_extents"]["ymin"])/(2.0 **(z.to_f))
-    x_min = @cfg["base_extents"]["xmin"] + x*w_x
-    return { "x_min" => @cfg["base_extents"]["xmin"] + x*w_x,
-      "y_min" => @cfg["base_extents"]["ymin"] + y*w_y,
-      "x_max" => @cfg["base_extents"]["xmin"] + (x+1)*w_x,
-      "y_max" => @cfg["base_extents"]["ymin"] + (y+1)*w_y}
-  end
-  
   #does a block w/upper left and path - used to loop though tiles for cutting them up..
   def each_tile_ul(x,y,z)
-    if (is_fiddle(x,y,z))
-    	0.upto(@x_count) do |i|
-      		0.upto(@y_count) do |j|
-        		mk_path(i+x,j+y,z)
-        		path = get_path(x+i,y+j,z)
-			next if ( i == 0 || j ==0 || i == @x_count|| i == @y_count) 
-        		yield( i*@x_size, ((@y_count+1) - j - 1)*@y_size, path)
-      		end
-    	end
-    else
         0.upto(@x_count-1) do |i|
                 0.upto(@y_count-1) do |j|
-                        mk_path(i+x,j+y,z)
+                        #mk_path(i+x,j+y,z)
+			next if (is_fiddle(x,y,z) && ( i == 0 || j ==0 || i == @x_count|| i == @y_count))
                         path = get_path(x+i,y+j,z)
-                        yield( i*@x_size, (@y_count - j - 1)*@y_size, path)
+			if (@tile_mapper.up?())
+                        	yield( i*@x_size, (@y_count - j - 1)*@y_size, path, i+x, j+y, z)
+			else
+				#puts "#{i}/#{j}"
+				yield( i*@x_size, j*@y_size, path, i+x, j+y, z)
+			end
                 end
         end
-    end
   end
     
   #shifts x + y to align with grid..
@@ -180,25 +190,23 @@ class TileEngine
   
   #get url - returns the url for a bounding box
   def get_url_for_x_y_z(x,y,z)
-      # x,y,z to bounding box
-      bbox = x_y_z_to_map_x_y(x,y,z)
-      
-      # bounding box of end tile set 
-      bbox_big = x_y_z_to_map_x_y(x+@x_count-1,y+@y_count-1,z)
-
       x_count = @x_count
-      y_count = @y_count 
+      y_count = @y_count
+      x_mod = x
+      y_mod = y
 
       # If fiddle is turned on, inlargen request by 1 tile in each direction
       if (is_fiddle(x,y,z))
-		bbox = x_y_z_to_map_x_y(x-1,y-1,z)
-		bbox_big = x_y_z_to_map_x_y(x+@x_count,y+@y_count,z)
-		x_count += 2
-		y_count += 2
+                x_count += 2
+                y_count += 2
+		x_mod = x_mod - 1
+		y_mod = y_mod - 1
       end
-      
+
+      bbox = x_y_z_to_map_x_y_enlarged(x_mod,y_mod,z,@x_count,@y_count)
+
       #Format the url..
-      sprintf(@cfg["source_url"], @x_size*x_count , @y_size*y_count, bbox["x_min"],bbox["y_min"], bbox_big["x_max"], bbox_big["y_max"] )
+      sprintf(@cfg["source_url"], @x_size*x_count , @y_size*y_count, bbox["x_min"],bbox["y_min"], bbox["x_max"], bbox["y_max"] )
   end
 end
 
@@ -263,6 +271,67 @@ class ExternalTileEngine  < TileEngine
   end
 
 end
+
+
+class ExternalTileEngine  < TileEngine
+  require "idler"
+
+  #@@idler = Idler.new(1)
+  @@idler = nil
+
+  def initialize (cfg, logger )
+    super(cfg,logger)
+    @lt = "ExternalTileEngine"
+
+    @command_path = File.dirname(__FILE__) + "/external_tiler"
+
+    @@idler = Idler.new(1) if ( ! @@idler )   #Only create an idler if a instance is instaicated. My spelling sucks.  So does my coding.
+  end
+
+
+  def make_tiles(x,y,z)
+    path = get_path(x,y,z)
+    # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
+    return path if ( File.size?(path) != nil)
+
+    command = [@command_path, @cfg["config_path"], @cfg["title"], x.to_s, y.to_s, z.to_s]
+    @log.msginfo(@lt+"running -> #{command.join(" ")}")
+
+    @log.msginfo(@lt+"Starting subtiler (#{x},#{y}.#{z})..")
+
+    #using backticks
+    results = YAML.load(`#{command.join(" ")}`)
+    #using popen
+    #results = YAML.load(IO.popen(command.join(" ") {|f| f.readlines}))
+
+    @log.msginfo(@lt+"Subtiler finished (#{x},#{y}.#{z}).")
+    if (results["error"])
+      #output from the external tiler should include backtrace, logs, and reason..
+      #({"error"=>true, "reason" => e, "backtrace" => e.backtrace, "logs"=>logs }, STDOUT)
+      raise "external tiler error, reason -> #{results["reason"]}, backtrace -> #{results["backtrace"]}, command line -> '#{command.join(" ")}'"
+    end
+    return path
+  end
+
+  private
+
+  # Makes a tile.
+  def tile_gen (x,y,z)
+
+    path = get_path(x,y,z)
+    # Check to see if the tile has allready been generated (prevous request made it after this request was queed)
+    return path if ( File.size?(path) != nil)
+
+    ##
+    # Queue up everything around the request, to get maximise data generation. 
+    (-1).upto(1) {|dx| (-1).upto(1) {|dy| @@idler.add(self, x+dx*@cfg["tiles"]["x_count"],y+dy*@cfg["tiles"]["y_count"],z) if (!(dy == 0 && dx == 0)) }}
+
+    make_tiles(x,y,z)
+
+  end
+
+end
+
 
 ##
 # A per tile clocking sceme... fun for all..
@@ -393,6 +462,7 @@ class TileLockerFile
   end
   
 end
+
 
 
 

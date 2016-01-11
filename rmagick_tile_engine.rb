@@ -112,7 +112,6 @@ class RmagickTileEngine  < TileEngine
   def water?()
 	# (rand(10)%10==0)
 	if (rand(@watermark_chance)%(@watermark_chance) == 0)
-		puts("Water!")
 		return true
 	end
 	return false
@@ -138,8 +137,9 @@ class RmagickTileEngine  < TileEngine
     
       ##
       # Figure if full tile fetching is in order...
-      side = 2**z
-      if ( (x > side-@x_count) || y > side-@y_count  )
+      #side = 2**z
+      #if ( (x > side-@x_count) || y > side-@y_count  )
+      if (@tile_mapper.single?(x,y,z))
         ##
         # Full Fetch: No - do the tiles one by one.. full fetch would go outside the limits..
         return fetch_single_tile(x,y,z)
@@ -183,7 +183,7 @@ class RmagickTileEngine  < TileEngine
       
       #Is the image returned good?
       raise("No img returned for #{url} -> something serously wrong - WMS is probibly broken..") if ( !im )
-      
+
       #if debug, draw some info into the tiles themselves..
       im = draw_text(im,
           @label_font,
@@ -194,11 +194,12 @@ class RmagickTileEngine  < TileEngine
           @label_blend) if (@label_color)
       im = draw_text(im, @font, sprintf(@debug_message_format, x,y, z),10,210,@debug_color, 1.0) if (@tile_debug)
       
-      #make the directory..
-      mk_path(x,y,z)
-      
       #save the image, and do format conversion if needed..
-      im.write(get_path(x,y,z))
+      if (!check_if_empty?(im))
+          im.write(get_path(x,y,z)) 
+          mk_path(x,y,z)
+      end
+
       im.destroy!
       @locker.release_lock(x,y,z) # Release that lock!
     rescue
@@ -248,13 +249,18 @@ class RmagickTileEngine  < TileEngine
       im = color_reduce(im) if (@num_colors)
       
       #Loop though grid, writting out tiles
-      each_tile_ul(x,y,z) do |ul_x, ul_y, path|
+      each_tile_ul(x,y,z) do |ul_x, ul_y, path, tx,ty,tz|
         if (true) #(File.size?(path) == nil )
           tile = im.crop(ul_x,ul_y, @x_size,@y_size)
-          tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
-          tile = watermark(tile) if (@watermark && water?() )
-          tile.write(path)
-          tile.destroy!
+	  if (!check_if_empty?(tile))
+          	tile = draw_text(tile, @font, sprintf(@debug_message_format, x+i,y+j, z),10,210,@debug_color, 1.0) if (@tile_debug)
+          	tile = watermark(tile) if (@watermark && water?() )
+		mk_path(tx,ty,tz)
+          	tile.write(path)
+          	tile.destroy!
+	  else
+		tile.destroy!
+	  end
         else
           @log.msgerror(@lt+mn + "should not have found #{x}/#{y}/#{z}")
           raise "dup tile found for #{x}/#{y}/#{z} - whats the deal jay, fix me!"
@@ -266,4 +272,23 @@ class RmagickTileEngine  < TileEngine
       raise
     end
   end
+
+
+  #checks to see if the image is transparent
+  def check_if_empty?(img) 
+	return false if (!@cfg["tiles"]["delete_empty"])
+	ret = false
+ 	alpha = img.copy
+	alpha.alpha(Magick::ExtractAlphaChannel)
+	hist = alpha.color_histogram
+	#pp hist
+	return false if (hist.length != 1)
+	
+	#check if fully transparent
+	ret = true if (hist.keys.first.intensity() == 0 )
+	alpha.destroy!
+
+	ret
+  end
 end
+
