@@ -18,6 +18,8 @@ opts = Trollop::options do
   opt :verbose, "Be more verbose", :default => false
   opt :threads, "Number of tilers to run at a time", :default => 3
   opt :pipe, "pipe", :default=>"idler_5"
+  opt :path_override, "Override path", :default => ""
+  opt :seed_mult, "Grow the meta-tiling by this ammount", :default => 1
 end
 
 
@@ -29,9 +31,10 @@ system("mkfifo #{opts[:pipe]}")
 pipe = File.open(opts[:pipe])
 threads = []
 
-interval = 10
+waiting_interval = 3
+update_interval = 100
 
-queue= []
+queue = Queue.new
 
 
 
@@ -50,16 +53,16 @@ threads << Thread.new do
           		next
         	end
 		queue.push(tile)
-		if (queue.length > 9000 ) 
+		if (queue.length > 200000 ) 
 			puts "Reader: Queue full."
-			sleep 60*5
+			sleep waiting_interval
 			next
 		end
 	   rescue EOFError => e
-        	puts("INFO(#{my_id}): out of things to do.. sleeping")
+        	puts("INFO reader: out of things to do.. sleeping")
         	pipe = File.open(opts[:pipe])
         	sleep(10)
-        	puts("INFO(#{my_id}): waking up.")
+        	puts("INFO reader: waking up.")
       	   rescue => e
         	#YAML.dump({"error"=>true, "reason" => e, "backtrace" => e.backtrace, "logs"=>logs }, STDOUT)
         	# Ok, something very bad happend here... what to do..
@@ -110,8 +113,8 @@ end
 	## Read the config file..
 	tile = queue.pop
 	if (!tile) 
-		puts("INFO(#{my_id}): queue empty..")
-		sleep 10
+		puts("INFO(#{my_id}): queue empty.. #{queue.length}")
+		sleep waiting_interval
 		next
 	end
 
@@ -121,6 +124,10 @@ end
 	  cfg = File.open(tile["cfg"]) {|fd| YAML.load(fd)}
 	  cfg["esri"] = File.open(File.dirname(tile["cfg"])+"/" + cfg["esri_config"]) {|fd| XmlSimple.xml_in(fd.read) } if (cfg["esri_config"])
 	  cfg["path"] = tile["cfg"]
+  	  cfg["tiles"]["x_count"] *= opts[:seed_mult]
+	  cfg["tiles"]["y_count"] *= opts[:seed_mult]
+	  cfg["cache_dir"] = opts[:path_override] + "/" + File.basename(cfg["cache_dir"]) + "/"  if ( opts[:path_override] != "" )
+	  cfg["watermark"]["image"] = opts[:path_override] + "/images/" + File.basename(cfg["watermark"]["image"]) if ( opts[:path_override] != "" && cfg["watermark"]["image"] ) 
 	  tile_engine =  RmagickTileEngine.new(cfg, log)
 	end
     
@@ -128,15 +135,15 @@ end
 	x = tile["x"]
 	y = tile["y"]
 	z = tile["z"]
+
+	#newer versions use this
+	#raise ("x,y,or z is out of range for (#{x},#{y},#{z})") if (!tile_engine.valid?(x,y,z))     
     
-	raise ("x,y,or z is out of range for (#{x},#{y},#{z})") if (!tile_engine.valid?(x,y,z))     
-    
-	# get the tile in question..
 	path = tile_engine.get_tile(x,y,z)
     
 	waffle += 1
 	tiles += cfg["tiles"]["x_count"]*cfg["tiles"]["y_count"]
-	if ( waffle%interval == 0)
+	if ( waffle%update_interval == 0)
 	  puts("INFO(#{my_id}) #{tiles} tiles seeded. last one => #{tile["cfg"]} #{tile["x"]} #{tile["y"]} #{tile["z"]}")
 	  puts("INFO(#{my_id}) \trate is: #{(tiles - last_tiles).to_f/(Time.now - start_time)} sets/sec")
 	  start_time = Time.now
@@ -158,8 +165,8 @@ end
 	stuff += e.backtrace.join("\n")
 	stuff += "--------------------------\n"
 	#Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "tile grabber crash..", [stuff])
-	#puts stuff
-	#YAML.dump({"error"=>false, "logs"=>logs}, STDOUT)
+	puts stuff
+	YAML.dump({"error"=>false, "logs"=>logs}, STDOUT)
       end
     end
   end
