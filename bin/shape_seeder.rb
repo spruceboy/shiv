@@ -3,21 +3,18 @@ require 'rubygems'
 require 'trollop'
 require 'tempfile'
 require 'thread'
-require 'http_client_tools'
-require 'yaml'
-require 'tile_engine'
-require 'lumber'
+require 'shiv'
 require 'xmlsimple'
 require 'pp'
 require 'rgeo/shapefile'
 
 # reads the geometry out of the shapefile, and returns an array of geometry
 def readgeos(shapefile)
-  puts("INFO: reading #{shapefile}")
+  STDERR.puts("INFO: reading #{shapefile}")
   geos = []
   require 'rgeo/shapefile'
   RGeo::Shapefile::Reader.open(shapefile) do |file|
-    puts "File contains #{file.num_records} records."
+  STDERR.puts "File contains #{file.num_records} records."
     file.each do |record|
       geos << record.geometry
     end
@@ -26,6 +23,9 @@ def readgeos(shapefile)
   geos
 end
 
+
+#takes a bbob, and returns an array of points suitable for
+#converting to a linestring
 def bbox_to_line_array(bbox, factory)
   [
     factory.point(bbox['x_min'], bbox['y_min']),
@@ -36,14 +36,9 @@ def bbox_to_line_array(bbox, factory)
   ]
 end
 
+#takes a x,y,z bbox, and converts it to a geometry
 def togeo(engine, x, y, z, factory)
   bbox = engine.x_y_z_to_map_x_y(x, y, z)
-  # ul = factory.point(bbox['x_min'], bbox['y_max'])
-  # ll = factory.point(bbox['x_min'], bbox['y_min'])
-  # ur = factory.point(bbox['x_max'], bbox['y_max'])
-  # lr = factory.point(bbox['x_max'], bbox['y_min'])
-  # box = [ll, ul, ur, lr, ll]
-  # factory.polygon(factory.line_string(box))
   factory.polygon(factory.line_string(bbox_to_geo(bbox, factory)))
 end
 
@@ -54,8 +49,15 @@ end
 
 def dolevel(x, y, z, cfg, opts, geo, engine)
   return if z > opts[:z]
+  STDERR.puts("Progress: #{x}/#{y}/#{z}") if (z == 7)
   return unless isin?(engine, geo, x, y, z, @factory)
-  @pipe.syswrite("#{opts[:cfg]} #{x} #{y} #{z}\n")
+
+  if @pipe
+  	@pipe.syswrite("#{opts[:cfg]} #{x} #{y} #{z}\n")
+  else
+	puts "#{opts[:cfg]} #{x} #{y} #{z}"
+  end
+
   0.upto(1) do |i|
     0.upto(1) do |j|
       dolevel(x * 2 + i, y * 2 + j, z + 1, cfg, opts, geo, engine)
@@ -71,7 +73,7 @@ opts = Trollop.options do
   opt :verbose, 'Be more verbose', default: false
   opt :cfg, 'config', default: 'This is it'
   opt :shapefile, 'shapefile', default: 'shapefile'
-  opt :pipe, 'pipe', default: 'idler_5'
+  opt :pipe, 'pipe', default: nil
   opt :z, 'z_level_max', default: 5
   opt :s, 'z_level_min', default: 1
   opt :x, 'max_x', default: 30_000_000.0
@@ -104,6 +106,6 @@ end
 
 @pipe = File.open(opts[:pipe], 'w')
 
+STDERR.puts("Begining..")
 geos.each { |x| dolevel(0, 0, 0, cfg, opts, x, tile_engine) }
 
-puts 'done!'
