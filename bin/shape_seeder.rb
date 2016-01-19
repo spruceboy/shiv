@@ -39,11 +39,11 @@ end
 #takes a x,y,z bbox, and converts it to a geometry
 def togeo(engine, x, y, z, factory)
   bbox = engine.x_y_z_to_map_x_y(x, y, z)
-  factory.polygon(factory.line_string(bbox_to_geo(bbox, factory)))
+  factory.polygon(factory.line_string(bbox_to_line_array(bbox, factory)))
 end
 
-def isin?(engine, x, y, z, factory)
-  bbox_geo = togeo(engine, geo, x, y, z, factory)
+def isin?(engine, geo,x, y, z, factory)
+  bbox_geo = togeo(engine, x, y, z, factory)
   (bbox_geo.within?(geo) || geo.within?(bbox_geo) || geo.intersects?(bbox_geo))
 end
 
@@ -104,7 +104,9 @@ if opts[:combine]
   geos = [sum]
 end
 
-@pipe = File.open(opts[:pipe], 'w')
+if (opts[:pipe] )
+	@pipe = File.open(opts[:pipe], 'w')
+end
 
 STDERR.puts("Begining..")
 geos.each { |x| dolevel(0, 0, 0, cfg, opts, x, tile_engine) }
