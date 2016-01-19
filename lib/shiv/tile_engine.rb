@@ -1,12 +1,8 @@
 #!/usr/bin/ruby
-
-require 'rubygems'
 require 'tempfile'
 require 'thread'
-require 'lib/http_client_tools'
-require 'lib/storage_engine'
-require 'lib/tile_mapper'
-
+require 'shiv/idler'
+require 'shiv/storage_engine'
 ###
 # Notes
 #                     **** tile Layout ****************
@@ -200,7 +196,7 @@ end
 # Newer tilesetup
 
 class ExternalTileEngine < TileEngine
-  require 'idler'
+  require 'shiv/idler'
 
   # @@idler = Idler.new(1)
   @@idler = nil
@@ -255,7 +251,7 @@ class ExternalTileEngine < TileEngine
 end
 
 class ExternalTileEngine < TileEngine
-  require 'idler'
+  require 'shiv/idler'
 
   # @@idler = Idler.new(1)
   @@idler = nil
@@ -432,6 +428,3 @@ class TileLockerFile
     end
   end
 end
-
-require 'rmagick_tile_engine'
-require 'idler'
