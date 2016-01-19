@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'shiv_includes'
-require 'pp'
-
 ########################
 # Very small framework for shiv, only
 # this was the starting point: http://theexciter.com/files/cabinet.rb.txt , but only a rough one

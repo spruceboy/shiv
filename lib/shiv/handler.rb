@@ -2,9 +2,12 @@
 #
 # Web serving related happyness... And it seems like tommarrow might not come...
 
+require "shiv/tile_engine"
+
+
 ##
 # provides a way to mail errors etc..
-require 'lib/mailer'
+require 'shiv/mailer'
 require 'cgi'
 
 # ************************************************************************************************

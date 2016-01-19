@@ -1,9 +1,8 @@
 #!/usr/local/bin/ruby
 require 'cgi'
-require 'rubygems'
 require 'xmlsimple'
-require 'yaml'
 
+require "shiv/handler"
 ##
 # Serves up kml..
 class KMLHandler < RackWelder

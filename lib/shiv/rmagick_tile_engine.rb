@@ -5,7 +5,7 @@
 # Designed to be used by a seperate tile generator
 # to hid rmagick issues (leaks, strangeness of all sorts..)
 # but in receint times it is stable enough to run inside the main tiler, if needed.
-
+require "shiv/tile_engine"
 class RmagickTileEngine < TileEngine
   require 'rubygems'
   require 'RMagick'

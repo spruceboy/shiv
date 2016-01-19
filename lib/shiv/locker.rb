@@ -3,7 +3,7 @@
 
 require 'yaml'
 
-require 'lib/mailer'
+require 'shiv/mailer'
 
 # locker stub class
 class Locker

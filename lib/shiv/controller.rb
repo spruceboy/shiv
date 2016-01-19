@@ -2,6 +2,8 @@
 # Used by shiv
 # A very basic controller handler that allows restarting and reloading on the fly..
 
+require "shiv/handler"
+
 class ControllerHandler < RackWelder
   def initialize(log, cfg, roundhouse)
     @logger = log
