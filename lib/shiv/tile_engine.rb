@@ -3,6 +3,7 @@ require 'tempfile'
 require 'thread'
 require 'shiv/idler'
 require 'shiv/storage_engine'
+require 'shiv/tile_mapper'
 ###
 # Notes
 #                     **** tile Layout ****************
