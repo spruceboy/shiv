@@ -4,6 +4,7 @@ require 'thread'
 require 'shiv/idler'
 require 'shiv/storage_engine'
 require 'shiv/tile_mapper'
+require 'shiv/http_client_tools'
 ###
 # Notes
 #                     **** tile Layout ****************

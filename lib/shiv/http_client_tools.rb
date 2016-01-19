@@ -1,6 +1,3 @@
-#!/usr/bin/env ruby
-
-require 'rubygems'
 ###
 #  http client tools
 #  Url/fetching/curl like stuff
