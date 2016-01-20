@@ -16,26 +16,31 @@ require 'xmlsimple'
 opts = Trollop.options do
   opt :verbose, 'Be more verbose', default: false
   opt :threads, 'Number of tilers to run at a time', default: 3
-  opt :pipe, 'pipe', default: 'idler_5'
+  opt :pipe, 'pipe', default: nil
   opt :path_override, 'Override path', default: ''
   opt :seed_mult, 'Grow the meta-tiling by this ammount', default: 1
 end
 
-## make pipes
-system("rm -f -v #{opts[:pipe]}") if File.exist?(opts[:pipe])
-system("mkfifo #{opts[:pipe]}")
+# open tile stream 
+pipe = STDIN
+if opts[:pipe]
+	system("rm -f -v #{opts[:pipe]}") if File.exist?(opts[:pipe])
+	system("mkfifo #{opts[:pipe]}")
+	pipe = File.open(opts[:pipe])
+end
 
-# open pipe
-pipe = File.open(opts[:pipe])
 threads = []
 
 waiting_interval = 3
-update_interval = 100
+update_interval = 1000
 
 queue = Queue.new
 
 ###
 # Reader..
+
+
+@done = false
 
 threads << Thread.new do
   loop do
@@ -58,9 +63,15 @@ threads << Thread.new do
                next
              end
            rescue EOFError
-             puts('INFO reader: out of things to do.. sleeping')
-             pipe = File.open(opts[:pipe])
-             sleep(10)
+             puts('INFO reader: out of things to do.. ')
+	     if (!opts[:pipe])
+		puts("INFO reader: Done.")
+		@done = true
+		break
+             else
+		pipe = File.open(opts[:pipe])
+             	sleep(10)
+	     end
              puts('INFO reader: waking up.')
            rescue RuntimeError => e
              stuff = ''
@@ -75,6 +86,13 @@ threads << Thread.new do
              stuff += "--------------------------\n"
              puts stuff
            end
+  end
+end
+
+threads << Thread.new do
+  while !@done do
+	puts("INFO: queue size #{queue.length}")
+	sleep(1)
   end
 end
 
@@ -95,7 +113,7 @@ end
     # config file helper..
     cfg = nil
     puts "Starting Worker #{my_id}"
-    loop do
+    while (!@done || !queue.empty?) do
       begin
         ##
         # Someday do something useful with these logs
@@ -120,11 +138,16 @@ end
 
         log.msginfo('CMD -> {' + ARGV.join(' ') + '}')
 
-        tile = queue.pop
+        tile = queue.pop(true)
         unless tile
-          puts("INFO(#{my_id}): queue empty.. #{queue.length}")
-          sleep waiting_interval
-          next
+	  if ( @done )
+	  	puts ("INFO(#{my_id}): done")
+		break
+	  else
+          	puts("INFO(#{my_id}): queue empty.. #{queue.length}")
+          	sleep waiting_interval
+          	next
+	  end
         end
 
         # load configs, skiping if it is the same as the last one.
@@ -161,6 +184,13 @@ end
         # if (!tile_engine.valid?(x,y,z))
         #   raise ("x,y,or z is out of range for (#{x},#{y},#{z})")
         # end
+
+	#check to see if tile production is already in progress..
+	if (tile_engine.in_progress(tile['x'], tile['y'], tile['z']))
+		#puts "INFO(#{my_id}) skipping #{tile['x']}/#{tile['y']}/#{tile['z']}"
+		next
+	end
+
         tile_engine.get_tile(tile['x'], tile['y'], tile['z'])
 
         waffle += 1
@@ -170,7 +200,7 @@ end
           start_time = Time.now
           last_tiles = tiles
           puts "INFO(#{my_id}) #{tiles} tiles seeded"
-          puts "INFO(#{my_id}) last: #{tile.to_yaml}"
+          #puts "INFO(#{my_id}) last: #{tile.to_yaml}"
           puts "INFO(#{my_id}) rate is: #{seed_rate} sets/sec"
           waffle = 0 if waffle > 1_000_000
         end
