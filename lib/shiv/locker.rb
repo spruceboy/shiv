@@ -1,114 +1,129 @@
-#!/usr/bin/env ruby
-# lock file helper
+#locking utils
+require 'thread'
+# A per tile clocking sceme... fun for all..
 
-require 'yaml'
-
-require 'shiv/mailer'
-
-# locker stub class
-class Locker
-  def initialize(_hsh, logger)
-    @logger = logger
+class TileLocker
+  def initialize(log)
+    @log = log
+    @locker = {}
+    @wait = 0.3
+    @m_lock = Mutex.new
+    @lt = 'TileLocker'
   end
 
-  def lock
+  ###
+  # This is confusing.. pay attention!
+  # This function is used to control requests, if a request is in progress, it waits until the request is finished, then returns true, with the lock not set/altered.
+  # If a request is not in progress, it returns false and sets the lock.
+  def check_and_wait(x, y, z)
+    busy = false
+    until  check_lock(x, y, z)
+      @log.msgdebug(@lt + "check_and_wait -> waiting on #{x},#{y},#{z}")
+      sleep(@wait)
+      busy = true
+    end
+
+    release_lock(x, y, z) if busy # Release lock, and data has allready been generated..
+    busy
   end
 
-  def unlock
+  # Returns true if locked, false otherwise..
+  def check_lock(x, y, z)
+    token = "#{x}_#{y}_#{z}"
+    @m_lock.synchronize do
+      if !@locker[token]
+        @log.msgdebug(@lt + "locking on #{x},#{y},#{z}")
+        @locker[token] = Time.now
+        return true
+      else
+        return false
+      end
+    end
   end
 
-  def active?
-  end
-end
-
-# locking via file based locking containing a yaml block..
-class YamlLock < Locker
-  def initialize(hsh, logger, path)
-    supper(hsh, logger)
-    @lock_path = path
-    ##
-    # Should be configurable...
-    @lock_time_out = 2 * 60 # 2 min..
-  end
-
-  def lock
-  end
-
-  def unlock
-  end
-
-  def active?
-  end
-
-  private
-
-  def lock_check
-    return false unless File.exist?(@lock_path)
-    return false if File.size?(@lock_path)
-    lock_cfg = load_lock
-    return false unless lock_cfg
-    return false if (Time.now - lock_cfg['lock_tm']) > 2
-    true
-  end
-
-  def load_lock
-    File.open(@lock_path) { |x| YAML.load(x) }
+  # to be called after check_and_wait..
+  def release_lock(x, y, z)
+    token = "#{x}_#{y}_#{z}"
+    @m_lock.synchronize { @locker.delete(token) }
   end
 end
 
-class RunLock
-  ##
-  # Hsh is a hash
-  # should look like
-  #       [lockfile] => "pathtolockfile"
-  #       [message] => "lock file msg..."
-  #       [mailer] -> {mailer conf}
-  def initialize(hsh)
-    @hsh = hsh
-    @pid = Process.pid
-    if !File.exist?(hsh['lockfile'])
-      lock
+class TileLockerFile
+  WAIT_TIME = (60 * 3)
+  def initialize(log)
+    @log = log
+    @lock_dir = './locks/'
+    @wait = 0.3
+    @m_lock = Mutex.new
+    @lt = 'TileLockerFile:'
+  end
+
+  def is_locked?(x,y,z)
+	File.exists?(getpath(x,y,z))
+  end
+
+  ###
+  # This is confusing.. pay attention!
+  # This function is used to control requests, if a request is in progress, it waits until the request is finished, then returns true, with the lock not set/altered.
+  # If a request is not in progress, it returns false and sets the lock.
+  # Ok, I lied, it should always return with a lock in place..
+  def check_and_wait(x, y, z)
+    busy = false
+    until  check_lock(x, y, z)
+      @log.msgdebug(@lt + "check_and_wait -> waiting on #{x},#{y},#{z}")
+      puts (".")
+      sleep(@wait)
+      busy = true
+    end
+    busy
+  end
+
+  # Returns true if locked, false otherwise..
+  def check_lock(x, y, z)
+    if !locked(x, y, z)
+      @log.msgdebug(@lt + "locking on #{x},#{y},#{z}")
+      return true
     else
-      ##
-      # lock allready exists, read it, then decide if to email out warning...
-      lock_info = YAML.load(File.open(hsh['lockfile']))
-      if lock_info['lock_time'].to_f < (Time.now - 24 * 60 * 60).to_f
-        if hsh['alert']
-          body = []
-          body << 'A lock is still active.'
-          body << 'It looks like '
-          body << '-----------------------------'
-          body << YAML.dump(lock_info)
-          Mailer.deliver_message(hsh['mailer'], body)
+      return false
+    end
+  end
+
+  # to be called after check_and_wait..
+  def release_lock(x, y, z)
+    @log.msgdebug(@lt + "releasing #{x},#{y},#{z}")
+    @m_lock.synchronize do
+      begin
+        File.delete(getpath(x, y, z))
+      rescue => e
+        @log.msgerror(@lt + "release lock -> colision at #{x},#{y},#{z} (#{e})")
+      end
+    end
+  end
+
+  def getpath(x, y, z)
+    ("#{@lock_dir}#{x}_#{y}_#{z}")
+  end
+
+  def locked(x, y, z)
+    @m_lock.synchronize do
+      path = getpath(x, y, z)
+
+      begin # this section deals with old locks - if lock file exists and is old, delete..
+        if  File.exist?(path) && ((Time.now - File.mtime(path)) > WAIT_TIME)
+          @log.msgerror(@lt + "Lock timeout on #{x},#{y},#{z}  ")
+          File.delete(path)
         end
+      rescue
+        # Do nothing - means file is gone.
       end
 
-      unless File.exist?('/proc/' + lock_info['pid'].to_s)
-        if hsh['alert']
-          body = []
-          body << "A lock is still active but the pid (#{hsh['pid']}) is not active."
-          body << '-----------------------------'
-          body << YAML.dump(lock_info)
-          Mailer.deliver_message(hsh['mailer'], body)
-         end
+      # Normal path
+      if File.exist?(path)
+        return true
+      else
+        File.open(path, 'w') { |fl| fl.write(Time.now.to_s); fl.flush }
+        return false
       end
-
-      fail 'Lock still active.'
     end
-  end
-
-  def lock
-    conf = {
-      'message' => @hsh['message'],
-      'pid' => @pid,
-      'lock_time' => Time.now
-    }
-    File.open(@hsh['lockfile'], 'w') do |out|
-      YAML.dump(conf, out)
-    end
-  end
-
-  def unlock
-    File.unlink(@hsh['lockfile'])
   end
 end
