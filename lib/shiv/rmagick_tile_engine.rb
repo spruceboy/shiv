@@ -22,12 +22,11 @@ class RmagickTileEngine < TileEngine
     @debug_message_format = 'Debug:%d/%d/%d'
 
     # downloader..
-    @downloader = SimpleHttpClient.new
+    #@downloader = SimpleHttpClient.new
+    @downloader = SimpleCurlHttpClient.new
 
     # tag used for logging msgs
     @lt = self.class.to_s + ':'
-
-    @locker = TileLockerFile.new(@log)
 
     # configure simple labeling, if required
     setup_labels
@@ -196,8 +195,8 @@ class RmagickTileEngine < TileEngine
 
       # save the image, and do format conversion if needed..
       unless check_if_empty?(im)
+	mk_path(x, y, z)
         im.write(get_path(x, y, z))
-        mk_path(x, y, z)
       end
 
       im.destroy!
