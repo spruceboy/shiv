@@ -8,7 +8,7 @@ class StorageEngine
   end
 
   def get_path(x, y, z)
-    @cfg['cache_dir'] + sprintf(PATH_FORMAT, z, x % 128, y % 128, x, y, x, y, z, @storage_format)
+    @cfg['cache_dir'] + sprintf(PATH_FORMAT, z, x % 128, y % 128, x, y, x, y, z, @cfg['storage_format'])
   end
 end
 
