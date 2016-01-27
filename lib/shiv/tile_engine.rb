@@ -201,7 +201,7 @@ class TileEngine
       y_mod -= 1
     end
 
-    bbox = x_y_z_to_map_x_y_enlarged(x_mod, y_mod, z, @x_count, @y_count)
+    bbox = x_y_z_to_map_x_y_enlarged(x_mod, y_mod, z, x_count, y_count)
 
     # Format the url..
     sprintf(@cfg['source_url'], @x_size * x_count, @y_size * y_count, bbox['x_min'], bbox['y_min'], bbox['x_max'], bbox['y_max'])

@@ -42,12 +42,20 @@ class XYZMapper
   end
 
   def x_y_z_to_map_x_y_enlarged(x, y, z, x_count, y_count)
-    x_y_z_to_map_x_y(x + x_count - 1, y + y_count - 1, z)
+    bbox_big = x_y_z_to_map_x_y(x + x_count - 1, y + y_count - 1, z)
+    # x,y,z to bounding box
+    bbox = x_y_z_to_map_x_y(x,y,z)
+
+    { 'x_min' => bbox['x_min'],
+      'y_min' => bbox['y_min'],
+      'x_max' => bbox_big['x_max'],
+      'y_max' => bbox_big['y_max']}
+
   end
 
   def single?(x, y, z)
     side = 2**z
-    return true if (x > side - @x_count) || y > side - @y_count
+    return true if ((x > side - @x_count) || (y > side - @y_count))
     false
   end
 
