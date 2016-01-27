@@ -2,10 +2,10 @@
 require 'rubygems'
 require 'tempfile'
 require 'thread'
-require 'http_client_tools'
 require 'yaml'
-require 'tile_engine'
-require 'lumber'
+require 'shiv'
+require 'shiv/tile_engine'
+require 'shiv/lumber'
 require 'xmlsimple'
 
 ####
