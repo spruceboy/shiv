@@ -44,7 +44,7 @@ end
 
 def isin?(engine, geo,x, y, z, factory)
   bbox_geo = togeo(engine, x, y, z, factory)
-  (bbox_geo.within?(geo) || geo.within?(bbox_geo) || geo.intersects?(bbox_geo))
+  (bbox_geo.within?(geo) || geo.within?(bbox_geo) || !geo.disjoint?(bbox_geo))
 end
 
 def dolevel(x, y, z, cfg, opts, geo, engine)
