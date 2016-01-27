@@ -204,6 +204,9 @@ end
           puts "INFO(#{my_id}) rate is: #{seed_rate} sets/sec"
           waffle = 0 if waffle > 1_000_000
         end
+      rescue ThreadError => e 
+	 puts("INFO(#{my_id}): queue empty.. #{queue.length}")
+         sleep waiting_interval
       rescue RuntimeError => e
         stuff = ''
         stuff += "--------------------------\n"
