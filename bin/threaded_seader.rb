@@ -37,11 +37,9 @@ update_interval = 1000
 queue = Queue.new
 
 ###
-# Reader..
-
-
+# Reader.. 
+# reads list of tiles from stdin or from a pipe
 @done = false
-
 threads << Thread.new do
   loop do
     begin
@@ -58,7 +56,6 @@ threads << Thread.new do
              end
              queue.push(tile)
              if queue.length > 200_000
-               puts 'Reader: Queue full.'
                sleep waiting_interval
                next
              end
@@ -89,15 +86,19 @@ threads << Thread.new do
   end
 end
 
+
+##
+# queue watcher - prints length of queue
+# peroidlicly. 
 threads << Thread.new do
   while !@done do
 	puts("INFO: queue size #{queue.length}")
-	sleep(1)
+	sleep(60)
   end
 end
 
 ###
-# Threads for each tiler.
+# tiling threads - generates tiles
 1.upto(opts[:threads]) do |i|
   threads << Thread.new do
     # thread it
@@ -181,9 +182,9 @@ end
         end
 
         # newer versions use this
-        # if (!tile_engine.valid?(x,y,z))
-        #   raise ("x,y,or z is out of range for (#{x},#{y},#{z})")
-        # end
+         if (!tile_engine.valid?(x,y,z))
+           raise ("x,y,or z is out of range for (#{x},#{y},#{z})")
+         end
 
 	#check to see if tile production is already in progress..
 	if (tile_engine.in_progress(tile['x'], tile['y'], tile['z']))
