@@ -72,6 +72,10 @@ class TileEngine
     @tile_mapper.valid?(x, y, z)
   end
 
+  def generated?(x,y,z)
+	File.exists?(get_path(x, y, z))
+  end
+
   ##
   # checks to see if a tile is being generated. 
   def in_progress(x,y,z) 
