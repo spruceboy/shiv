@@ -24,6 +24,7 @@ class RmagickTileEngine < TileEngine
     # downloader..
     #@downloader = SimpleHttpClient.new
     @downloader = SimpleCurlHttpClient.new
+    #@downloader = SimpleNetHttpClient.new
 
     # tag used for logging msgs
     @lt = self.class.to_s + ':'
@@ -165,9 +166,6 @@ class RmagickTileEngine < TileEngine
         return
       end
 
-      # Local file to write data too
-      i = get_tempfile
-
       # convert x,y,z to a bounding box
       bbox = x_y_z_to_map_x_y(x, y, z)
 
@@ -224,10 +222,6 @@ class RmagickTileEngine < TileEngine
         @locker.release_lock(x, y, z)
         return
       end
-
-      # Temp file for temp local storage of image..
-      t = get_tempfile
-      @log.msgdebug(@lt + mn + "tmpfile => {#{t.path}}")
 
       # get url..
       url = get_url_for_x_y_z(x, y, z)
