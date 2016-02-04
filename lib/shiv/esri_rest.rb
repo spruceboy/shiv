@@ -1,7 +1,7 @@
 #########
 # Esri REST style handler..
-require "shiv/handler"
-require "shiv/tile_engine"
+require 'shiv/handler'
+require 'shiv/tile_engine'
 
 class ESRIRestTileHandler < RackWelder
   require 'json'
