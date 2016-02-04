@@ -243,6 +243,36 @@ class LumberAppendNoFile < LumberNoFile
   end
 end
 
+
+class NullLumber < LumberNoFile
+  # Does nothing - used if no logging is needed
+
+  def initialize()
+  end
+
+  def msginfo(s)
+	return
+  end
+
+  def loginfo(s)
+	return
+  end
+
+  def msgdebug(s)
+	return
+  end
+
+  def msgstatus(_s)
+	return
+  end
+
+  def msgerror(s)
+	return
+  end
+
+end
+
+
 class HttpLumber < Lumber
   def initialize(cfg)
     super(cfg)
