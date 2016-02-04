@@ -139,7 +139,6 @@ end
 @pipe = File.open(opts[:pipe], 'w') if opts[:pipe]
 
 STDERR.puts('Begining..')
-geos = geos[0, 1]
 if !opts[:strange_z_levels]
   geos.each { |x| dolevel(0, 0, 0, cfg, opts, x, tile_engine) }
 else
