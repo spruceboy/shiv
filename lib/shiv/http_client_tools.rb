@@ -47,3 +47,14 @@ class SimpleCurbHttpClient < HttpClient
     false
   end
 end
+
+##
+# Net:HTTP version
+class SimpleNetHttpClient < HttpClient
+  require 'net/http'
+  def easy_body(url)
+	uri = URI(url)
+	Net::HTTP.get(uri)
+  end
+end
+
