@@ -44,18 +44,17 @@ class XYZMapper
   def x_y_z_to_map_x_y_enlarged(x, y, z, x_count, y_count)
     bbox_big = x_y_z_to_map_x_y(x + x_count - 1, y + y_count - 1, z)
     # x,y,z to bounding box
-    bbox = x_y_z_to_map_x_y(x,y,z)
+    bbox = x_y_z_to_map_x_y(x, y, z)
 
     { 'x_min' => bbox['x_min'],
       'y_min' => bbox['y_min'],
       'x_max' => bbox_big['x_max'],
-      'y_max' => bbox_big['y_max']}
-
+      'y_max' => bbox_big['y_max'] }
   end
 
   def single?(x, y, z)
     side = 2**z
-    return true if ((x > side - @x_count) || (y > side - @y_count))
+    return true if (x > side - @x_count) || (y > side - @y_count)
     false
   end
 
@@ -79,7 +78,8 @@ end
 
 # maps tile x/y/z to map coords using ERSI style configs.
 class ESRIXYZMapper < XYZMapper
-  ESRI_TILE_SIZE = 512
+   #Is this fixed?
+   ESRI_TILE_SIZE = 512
 
   def initialize(cfg, logger)
     super(cfg, logger)
@@ -148,6 +148,17 @@ class ESRIXYZMapper < XYZMapper
 
   def max_y(z)
     (@orig_y - @cfg['base_extents']['ymin']) / (get_res(z) * ESRI_TILE_SIZE).to_i + 1
+  end
+
+  def tile_min_and_max_for_bbox(xmin, ymin, xmax, ymax, z)
+    res = get_res(z)
+    tile_size_in_map_units = ESRI_TILE_SIZE * res
+    {
+      'x_min' => ((xmin - @orig_x) / tile_size_in_map_units).to_i,
+      'y_min' => ((ymin + @orig_y) / tile_size_in_map_units).to_i,
+      'x_max' => ((xmax - @orig_x) / tile_size_in_map_units).to_i + 1,
+      'y_max' => ((ymax + @orig_y) / tile_size_in_map_units).to_i + 1
+    }
   end
 
   private
