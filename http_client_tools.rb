@@ -38,7 +38,11 @@ class SimpleCurlHttpClient < HttpClient
     end
     
     def easy_body ( url)
-        return Curl::Easy.perform(url).body_str
+        #return Curl::Easy.perform(url).body_str
+        c = Curl::Easy.new(url)
+  	c.follow_location = true
+	c.perform
+	return c.body_str
     end
 end
 
