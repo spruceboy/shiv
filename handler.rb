@@ -206,6 +206,12 @@ class TileHandler < RackWelder
 	    ##
 	    # deal with negitive x values..
 	    x = (x % (2**z)) if (x < 0)
+
+            if (x > (2**(z+1)) || y > (2**(z+1) ) || z > 24 )
+                 @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
+                 give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
+                 return
+            end
             
             # Call get tile..
             path = @tile_engine.get_tile(x,y,z)
