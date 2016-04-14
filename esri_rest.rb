@@ -73,8 +73,8 @@ class ESRIRestTileHandler < RackWelder
 	y = (2**(z))-y-1   #flip to esri style numbering..
 	puts("URI -> #{request.env["PATH_INFO"]} -> #{x},#{y}, #{z}")
 	
-	
-	if (z < 0|| y < 0 || z < 0)
+
+	if (z < 0|| y < 0 || z < 0 ||z > 24)
 	    @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
 	    give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
 	    return;
