@@ -226,6 +226,9 @@ class ExternalTileEngine  < TileEngine
     @command_path = File.dirname(__FILE__) + "/external_tiler"
     
     @@idler = Idler.new(1, cfg["idler"]) if ( ! @@idler )   #Only create an idler if a instance is instaicated. My spelling sucks.  So does my coding.
+
+    @font = '/usr/share/fonts/dejavu-lgc/DejaVuLGCSans.ttf' 
+    @label_size = 20
   end
   
   
@@ -252,8 +255,77 @@ class ExternalTileEngine  < TileEngine
     end
     return path
   end
-  
+
+
+
+  # check to see if we need to draw alt text on image
+  def alt_tile?(x,y,z,request)
+	return false if !@cfg["notice"]
+	return false if !@cfg["notice"]["auth"]
+	return false if !request.env[@cfg["notice"]["auth"]]
+	return true if (rand(@cfg["notice"]["one_out_of"]) == 0 )
+	return false
+  end
+
+  # draw alt text and return image as string.  
+  def get_alt_tile(x,y,z)
+      im = Magick::Image::read(get_path(x,y,z)).first
+      im = warning_text(im, @font, @cfg["notice"]["notice"],20,128)
+      im.format = @cfg["storage_format"]
+      blob = im.to_blob.dup
+      im.destroy!
+      return blob
+  end
+
   private
+
+  ##
+  # draws warning notice
+  # Wow, this is stupid.. Cannot reliably write text into images w/rmagick, need to make a new image,
+  # then blend... wow the pain!
+  #
+  def warning_text(img,font, msg,x,y)
+    over_color = "rgb(254,245,245)"
+    under_color = "rgb(0,0,0)"
+    blend = 1.0
+
+    ##
+    # Move text about..
+    x += rand(20) - 10
+    y += rand(40) - 20 
+
+    # Build a image to contain the text...
+    mark = Magick::Image.new(img.columns, img.rows) {
+      self.background_color = 'transparent'
+      }
+
+    # Create the "Draw"
+    dr = Magick::Draw.new
+    dr.stroke(@cfg["notice"]["background"])
+    dr.fill(@cfg["notice"]["background"])
+    dr.pointsize(@cfg["notice"]["size"])
+
+    #Hardcoded faont, should be config option..
+    dr.font('DejaVu-LGC-Sans-Book')
+
+    # the "{" is important, apparently need because of embeded spaces, not clear if needed, appears to work without,but docs say it is needed...
+    dr.text(x,y,"{" + msg + "}")
+    dr.fill(@cfg["notice"]["foreground"])
+    dr.stroke(@cfg["notice"]["foreground"])
+    dr.text(x+3,y-3,"{" + msg + "}")
+
+    #draw the text into the blank image
+    dr.draw(mark)
+
+    #blend the images, w/specified transparency
+    img = img.dissolve(mark,@cfg["notice"]["blending"], 1.0)
+
+    mark.destroy!
+
+    #return image..
+    return img
+  end
+
   
   # Makes a tile.
   def tile_gen (x,y,z)
