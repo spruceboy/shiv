@@ -1,4 +1,3 @@
-#!/usr/bin/env ruby
 #
 # Web serving related happyness... And it seems like tommarrow might not come...
 
@@ -213,18 +212,25 @@ class TileHandler < RackWelder
                  return
             end
             
+
+
             # Call get tile..
             path = @tile_engine.get_tile(x,y,z)
-            
-            # Wait for it to show up..
-            @tile_engine.check_and_wait(x,y,z)
+           
+          # Wait for it to show up..
+          @tile_engine.check_and_wait(x,y,z)
               
-            ##
-            # Do request..
-            size = send_file_full(path,request,response,@cfg["storage_format"])
+            	##
+            	# Do request..
+		if  @tile_engine.alt_tile?(x,y,z,request)
+			give_X(response, 200 ,@cfg["storage_format"], @tile_engine.get_alt_tile(x,y,z))
+		else
+	
+            		size = send_file_full(path,request,response,@cfg["storage_format"])
+		end
               
-            #Log xfer..
-            @logger.log_xfer(request,response,size, Time.now-start_tm)
+            	#Log xfer..
+            	@logger.log_xfer(request,response,size, Time.now-start_tm)
             
         rescue => excpt
             ###

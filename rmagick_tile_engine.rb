@@ -32,6 +32,17 @@ class RmagickTileEngine  < TileEngine
     setup_labels()
     setup_watermarking()
   end
+
+
+  def alt_tile?(x,y,z,request)
+	return true
+  end
+  def get_alt_tile(x,y,z) 
+      im = Magick::Image::read(get_path(x,y,z)).first
+      im = draw_text(im, @font, "test-test-test-test",10,210,"rgb(250,0,0)", 1.0) 
+      im.format = "jpg"
+      return im.to_blob
+  end
   
   private
   
