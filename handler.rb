@@ -9,7 +9,6 @@ require "time"
 
 #************************************************************************************************
 
-
 ##
 # Base class, don't instatuate, use sub-classes..
 
@@ -35,11 +34,11 @@ class RackWelder
 	[response.status, response.headers, response.body]
     end
 
-    private
+  private
     
-	##
-	# Sends out a file on disk - switchs between actual file sending and handoff file sending, depending on usage.
-    def send_file_full(req_path, request, response,mime_type="image/png", header_only=false )
+	   ##
+	   # Sends out a file on disk - switchs between actual file sending and handoff file sending, depending on usage.
+    def send_file_full(req_path, request, response,mime_type="image/png", _header_only=false )
 	return send_file_xsendfile(request, response,req_path, mime_type)
     end
     
@@ -67,17 +66,16 @@ class RackWelder
 	give_X(response, 404, "plain/text", msg)
     end
     
-    def send_file_full(req_path, request, response,mime_type="image/png", header_only=false )
+    def send_file_full(req_path, request, response,mime_type="image/png", _header_only=false )
 	return send_file_xsendfile(request, response,req_path, mime_type)
     end
     
-    def send_file_xsendfile(request, response,path, mime_type)
+    def send_file_xsendfile(_request, response,path, mime_type)
         response.body = ShivFile.new(path)
         response.headers[CONTENT_TYPE] = mime_type
-	#response.headers["Expires"] = (Time.now+10*60).httpdate
+	     #response.headers["Expires"] = (Time.now+10*60).httpdate
     end
 end
-
 
 class ShivFile
     def initialize (path)
@@ -89,17 +87,14 @@ class ShivFile
     end
 
     def each 
-	#do nothing.
+	     #do nothing.
     end
 end
-
-
 
 #************************************************************************************************
 
 ##
 # Simplest Handler of them all...  Not sure if used or not
-
 
 #************************************************************************************************
 
@@ -111,6 +106,7 @@ class SimpleHandler < RackWelder
       @logger = log
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     end
+
     def process(request, response)
       @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
       give_X(response, 200, "text/plain", "Hello #{request.env[@REMOTE_IP_TAG]}.")
@@ -126,7 +122,8 @@ class ExitHandler < RackWelder
       @logger = log
       @REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     end
-    def process(request, response)
+
+    def process(request, _response)
       @logger.puts("Got Exit request -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
       exit(-1)
     end
@@ -140,7 +137,7 @@ class TileHandler < RackWelder
     
     def initialize (cfg, log, http_cfg)
         
-        #save stuff for later
+ #save stuff for later
 	@logger = log
 	@cfg = cfg
 	@url_root = http_cfg["base"]    #/tag/
@@ -153,7 +150,7 @@ class TileHandler < RackWelder
 	@REMOTE_IP_TAG="HTTP_X_FORWARDED_FOR"
     end
    
-   #Handle a request
+    #Handle a request
     def process(request, response)
         begin
             
@@ -202,9 +199,9 @@ class TileHandler < RackWelder
             # Flip... go from jays tile scheme to googles..
             y = 2**z-y-1
 
-	    ##
-	    # deal with negitive x values..
-	    x = (x % (2**z)) if (x < 0)
+	           ##
+	           # deal with negitive x values..
+	           x = (x % (2**z)) if (x < 0)
 
             if (x > (2**(z+1)) || y > (2**(z+1) ) || z > 24 )
                  @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
@@ -213,24 +210,23 @@ class TileHandler < RackWelder
             end
             
 
-
             # Call get tile..
             path = @tile_engine.get_tile(x,y,z)
            
-          # Wait for it to show up..
-          @tile_engine.check_and_wait(x,y,z)
+            # Wait for it to show up..
+            @tile_engine.check_and_wait(x,y,z)
               
-            	##
-            	# Do request..
-		if  @tile_engine.alt_tile?(x,y,z,request)
-			give_X(response, 200 ,@cfg["storage_format"], @tile_engine.get_alt_tile(x,y,z))
-		else
-	
-            		size = send_file_full(path,request,response,@cfg["storage_format"])
-		end
+            ##
+            # Do request..
+		          if  @tile_engine.alt_tile?(x,y,z,request)
+          			give_X(response, 200 ,@cfg["storage_format"], @tile_engine.get_alt_tile(x,y,z))
+          		else
+          	
+                      		size = send_file_full(path,request,response,@cfg["storage_format"])
+          		end
               
-            	#Log xfer..
-            	@logger.log_xfer(request,response,size, Time.now-start_tm)
+            #Log xfer..
+            @logger.log_xfer(request,response,size, Time.now-start_tm)
             
         rescue => excpt
             ###
@@ -241,7 +237,7 @@ class TileHandler < RackWelder
                
                
             # send out broken email..
-            stuff = "Broken at #{Time.now.to_s}"
+            stuff = "Broken at #{Time.now}"
             stuff += "--------------------------\n"
             stuff += excpt.to_s + "\n"
             stuff += "--------------------------\n"
@@ -271,109 +267,108 @@ class BBoxTileHandler < RackWelder
 	@logger.loginfo(@lt+"Starting")
     end
    
-   def process(request, response)
-       
-    begin
-       
-  	size = 0
-	mn = "process:"
-	  
-	@logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
-	
-	
-	# Log access...
-	@logger.log_access(request)
-	
-	##
-	# get start time, for tracking purposes..
-	start_tm = Time.now
-	
-	##
-	#Remove prefix from url..
-	uri = request.env["PATH_INFO"]
-	uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
-	uri = uri.split("/")
-	
-	#validate url..
-	# Url should be of the form "(0)/token(1)/bbox(2)/minx(3)/miny(4)/maxx(5)/maxy(6)"
-	# Example:
-	#"/drg_geo/bbox/-150.46875000000000000000/66.44531250000000000000/-149.76562500000000000000/66.79687500000000000000"
-	if (uri.length != 7 && uri.length != 8 || uri[2].downcase != "bbox")
-	    @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
-	    give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
-	    return;
-	end
-	
-	##
-	# Uri is good, so do something...
-       
-	x,y,z =  @tile_engine.min_max_to_xyz( uri[3].to_f, uri[4].to_f, uri[5].to_f, uri[6].to_f)
-	
-	path = @tile_engine.get_tile(x,y,z)
-	
-	# Wait for it to show up..
-        @tile_engine.check_and_wait(x,y,z)
+    def process(request, response)
         
-	##
-	# Do request..
-	#size = send_file_full(path,request,response)
-        ##
-        # Do request..
-        if  @tile_engine.alt_tile?(x,y,z,request)
-           give_X(response, 200 ,@cfg["storage_format"], @tile_engine.get_alt_tile(x,y,z))
-        else
-           size = send_file_full(path,request,response,@cfg["storage_format"])
-        end
-
-	  
-	#Log xfer..
-	@logger.log_xfer(request,response,size, Time.now-start_tm)
-    rescue => excpt
-        ###
-        # Ok, something very bad happend here... what to do..
-        send_file_full(@cfg["error"]["img"],request,response,@cfg["error"]["format"])
-               
-        stuff = "Broken at #{Time.now.to_s}"
-        stuff += "--------------------------\n"
-        stuff += excpt.to_s + "\n"
-        stuff += "--------------------------\n"
-        stuff += excpt.backtrace.join("\n")
-        stuff += "--------------------------\n"
-        stuff += "request => " + YAML.dump(request)+ "\n-------\n"
-        Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "shiv crash..", [stuff])
-        @logger.logerr("Crash in::#{@lt}" + stuff)
+     begin
+        
+   	size = 0
+ 	  mn = "process:"
+ 	  
+ 	  @logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
+ 	
+ 	
+ 	  # Log access...
+ 	  @logger.log_access(request)
+ 	
+ 	  ##
+ 	  # get start time, for tracking purposes..
+ 	  start_tm = Time.now
+ 	
+ 	  ##
+ 	  #Remove prefix from url..
+ 	  uri = request.env["PATH_INFO"]
+ 	  uri = uri[@url_root.length,uri.length] if ( uri[0,@url_root.length] == @url_root)
+ 	  uri = uri.split("/")
+ 	
+ 	  #validate url..
+ 	  # Url should be of the form "(0)/token(1)/bbox(2)/minx(3)/miny(4)/maxx(5)/maxy(6)"
+ 	  # Example:
+ 	  #"/drg_geo/bbox/-150.46875000000000000000/66.44531250000000000000/-149.76562500000000000000/66.79687500000000000000"
+ 	  if (uri.length != 7 && uri.length != 8 || uri[2].downcase != "bbox")
+   	    @logger.logerr("Bad uri '#{request.env["PATH_INFO"]} from #{request.env[@REMOTE_IP_TAG]}")
+   	    give404(response, "The uri, #{request.env["PATH_INFO"]}, is not good.\n")
+   	    return;
+   	end
+ 	
+ 	  ##
+ 	  # Uri is good, so do something...
+        
+ 	  x,y,z =  @tile_engine.min_max_to_xyz( uri[3].to_f, uri[4].to_f, uri[5].to_f, uri[6].to_f)
+ 	
+ 	  path = @tile_engine.get_tile(x,y,z)
+ 	
+ 	  # Wait for it to show up..
+    @tile_engine.check_and_wait(x,y,z)
+         
+ 	  ##
+ 	  # Do request..
+ 	  #size = send_file_full(path,request,response)
+    ##
+    # Do request..
+    if  @tile_engine.alt_tile?(x,y,z,request)
+       give_X(response, 200 ,@cfg["storage_format"], @tile_engine.get_alt_tile(x,y,z))
+    else
+       size = send_file_full(path,request,response,@cfg["storage_format"])
     end
-   end
-end
 
+ 	  
+ 	  #Log xfer..
+ 	  @logger.log_xfer(request,response,size, Time.now-start_tm)
+     rescue => excpt
+         ###
+         # Ok, something very bad happend here... what to do..
+         send_file_full(@cfg["error"]["img"],request,response,@cfg["error"]["format"])
+                
+         stuff = "Broken at #{Time.now}"
+         stuff += "--------------------------\n"
+         stuff += excpt.to_s + "\n"
+         stuff += "--------------------------\n"
+         stuff += excpt.backtrace.join("\n")
+         stuff += "--------------------------\n"
+         stuff += "request => " + YAML.dump(request)+ "\n-------\n"
+         Mailer.deliver_message(@cfg["mailer_config"], @cfg["mailer_config"]["to"], "shiv crash..", [stuff])
+         @logger.logerr("Crash in::#{@lt}" + stuff)
+     end
+    end
+end
 
 ###
 # Handler designed to show how fast a mongrel should go, doing only the basic amount of work to dump a file..
 # Testing only... image path should be configureable. 
- class BenchmarkHandler < RackWelder
-   def initialize ( log)
-      @logger = log
-      @test_file = '/hub/cache/test/test_file.jpg'
-      @test_file_size = File.size(@test_file)
-   end
-   
-   def process(request, response)
-      @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
-      start_tm = Time.now
-      # Log access...
-      @logger.log_access(request)
-       size = send_file_full(@test_file,request, response,"image/jpeg")
-   end
-   private
-      
- end
+class BenchmarkHandler < RackWelder
+  def initialize ( log)
+     @logger = log
+     @test_file = '/hub/cache/test/test_file.jpg'
+     @test_file_size = File.size(@test_file)
+  end
+  
+  def process(request, response)
+     @logger.puts("hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
+     start_tm = Time.now
+     # Log access...
+     @logger.log_access(request)
+     size = send_file_full(@test_file,request, response,"image/jpeg")
+  end
+
+  private
+     
+end
 
 # tile json widget..
 class TileJson < RackWelder
-
   require "json"
   #set stuff up, log=logger, cfg=shiv kml config.
-  def initialize (cfg, log,http_conf)
+  def initialize (cfg, log,_http_conf)
     @logger = log
 
     #the ip of the requesting host..
@@ -383,8 +378,7 @@ class TileJson < RackWelder
     @cfg = cfg
   end
 
-
-   # Do something..
+  # Do something..
   def process(request, response)
     begin
 	params = request.params()
@@ -395,13 +389,13 @@ class TileJson < RackWelder
         	give_X(response, 200, "text/plain", get_tile_json())
 	end
 
-        return
+ return
     rescue => excpt
         ###
         # Ok, something very bad happend here... what to do..
         give_X(response, 500, "text/plain", "Something is broken, this is bad. Email support@gina.alaska.edu if problems continue.")
 
-        stuff = "Broken at #{Time.now.to_s}"
+        stuff = "Broken at #{Time.now}"
         stuff += "--------------------------\n"
         stuff += excpt.to_s + "\n"
         stuff += "--------------------------\n"
@@ -413,20 +407,19 @@ class TileJson < RackWelder
     end
   end
 
-
-  def get_tile_json ()
+  def get_tile_json 
 	resp = {
-    		"tilejson"=> "2.1.0",
-    		"name"=> @cfg["title"],
-    		"description"=> "TBD.",
-    		"attribution"=> "TBD.",
-    		"scheme"=> "xyz",
+   "tilejson"=> "2.1.0",
+   "name"=> @cfg["title"],
+   "description"=> "TBD.",
+   "attribution"=> "TBD.",
+   "scheme"=> "xyz",
 
-    		"tiles"=> [
-        		"/tiles/#{@cfg["title"]}/tile/{x}/{y}/{z}"
-    		],
-    		"minzoom"=> 0,
-    		"maxzoom"=> 22,
+   "tiles"=> [
+     "/tiles/#{@cfg["title"]}/tile/{x}/{y}/{z}"
+   ],
+   "minzoom"=> 0,
+   "maxzoom"=> 22,
 	}
 
 	
@@ -439,5 +432,4 @@ class TileJson < RackWelder
 
 	return (resp.to_json)
   end
-
 end
