@@ -262,6 +262,7 @@ class ExternalTileEngine  < TileEngine
   def alt_tile?(x,y,z,request)
 	return false if !@cfg["notice"]
 	return false if !@cfg["notice"]["auth"]
+	return true if ENV["AUTH_TEST"]
 	return false if !request.env[@cfg["notice"]["auth"]]
 	return true if (rand(@cfg["notice"]["one_out_of"]) == 0 )
 	return false

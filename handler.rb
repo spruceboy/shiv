@@ -275,6 +275,7 @@ class BBoxTileHandler < RackWelder
        
     begin
        
+  	size = 0
 	mn = "process:"
 	  
 	@logger.loginfo(@lt+mn + "hit -> #{request.env[@REMOTE_IP_TAG]} -> #{request.env["PATH_INFO"]}")
@@ -315,7 +316,15 @@ class BBoxTileHandler < RackWelder
         
 	##
 	# Do request..
-	size = send_file_full(path,request,response)
+	#size = send_file_full(path,request,response)
+        ##
+        # Do request..
+        if  @tile_engine.alt_tile?(x,y,z,request)
+           give_X(response, 200 ,@cfg["storage_format"], @tile_engine.get_alt_tile(x,y,z))
+        else
+           size = send_file_full(path,request,response,@cfg["storage_format"])
+        end
+
 	  
 	#Log xfer..
 	@logger.log_xfer(request,response,size, Time.now-start_tm)
